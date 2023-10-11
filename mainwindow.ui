@@ -1,0 +1,704 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="windowModality">
+   <enum>Qt::NonModal</enum>
+  </property>
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>1280</width>
+    <height>800</height>
+   </rect>
+  </property>
+  <property name="font">
+   <font>
+    <family>Arial</family>
+   </font>
+  </property>
+  <property name="focusPolicy">
+   <enum>Qt::NoFocus</enum>
+  </property>
+  <property name="windowTitle">
+   <string>MainWindow</string>
+  </property>
+  <property name="styleSheet">
+   <string notr="true">background:rgb(31, 31, 31);</string>
+  </property>
+  <property name="toolButtonStyle">
+   <enum>Qt::ToolButtonIconOnly</enum>
+  </property>
+  <property name="dockOptions">
+   <set>QMainWindow::AllowTabbedDocks|QMainWindow::AnimatedDocks</set>
+  </property>
+  <property name="unifiedTitleAndToolBarOnMac">
+   <bool>false</bool>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <property name="font">
+    <font>
+     <family>Arial</family>
+    </font>
+   </property>
+   <widget class="QToolButton" name="btnMenu">
+    <property name="geometry">
+     <rect>
+      <x>1149</x>
+      <y>480</y>
+      <width>121</width>
+      <height>121</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <family>Ubuntu</family>
+      <pointsize>26</pointsize>
+      <weight>75</weight>
+      <bold>true</bold>
+     </font>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">border: 2px white;
+border-radius: 10px;
+padding: 0 8px;
+background: white;</string>
+    </property>
+    <property name="text">
+     <string>MENU</string>
+    </property>
+    <property name="icon">
+     <iconset resource="Icons.qrc">
+      <normaloff>:/new/prefix1/icons/menu.png</normaloff>:/new/prefix1/icons/menu.png</iconset>
+    </property>
+    <property name="iconSize">
+     <size>
+      <width>200</width>
+      <height>200</height>
+     </size>
+    </property>
+    <property name="toolButtonStyle">
+     <enum>Qt::ToolButtonIconOnly</enum>
+    </property>
+   </widget>
+   <widget class="QToolButton" name="btnMedia">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>480</y>
+      <width>121</width>
+      <height>121</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <family>Ubuntu</family>
+      <pointsize>24</pointsize>
+      <weight>75</weight>
+      <bold>true</bold>
+     </font>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">border: 2px white;
+border-radius: 10px;
+padding: 0 8px;
+background: white;</string>
+    </property>
+    <property name="text">
+     <string>MEDIA</string>
+    </property>
+    <property name="icon">
+     <iconset resource="Icons.qrc">
+      <normaloff>:/new/prefix1/icons/media.png</normaloff>:/new/prefix1/icons/media.png</iconset>
+    </property>
+    <property name="iconSize">
+     <size>
+      <width>200</width>
+      <height>200</height>
+     </size>
+    </property>
+    <property name="toolButtonStyle">
+     <enum>Qt::ToolButtonIconOnly</enum>
+    </property>
+   </widget>
+   <widget class="QToolButton" name="btnDayir">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>180</y>
+      <width>121</width>
+      <height>121</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <family>Ubuntu</family>
+      <pointsize>24</pointsize>
+      <weight>75</weight>
+      <bold>true</bold>
+     </font>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">border: 2px white;
+border-radius: 10px;
+padding: 0 8px;
+background: white;</string>
+    </property>
+    <property name="text">
+     <string>DAY</string>
+    </property>
+    <property name="icon">
+     <iconset resource="Icons.qrc">
+      <normaloff>:/new/prefix1/icons/day.png</normaloff>:/new/prefix1/icons/day.png</iconset>
+    </property>
+    <property name="iconSize">
+     <size>
+      <width>200</width>
+      <height>200</height>
+     </size>
+    </property>
+    <property name="toolButtonStyle">
+     <enum>Qt::ToolButtonIconOnly</enum>
+    </property>
+   </widget>
+   <widget class="QToolButton" name="btnPantilt">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>330</y>
+      <width>121</width>
+      <height>121</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <family>Ubuntu</family>
+      <pointsize>30</pointsize>
+      <weight>75</weight>
+      <bold>true</bold>
+     </font>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">border: 2px white;
+border-radius: 10px;
+padding: 0 8px;
+background: white;</string>
+    </property>
+    <property name="text">
+     <string>PAN-
+TILT</string>
+    </property>
+    <property name="icon">
+     <iconset resource="Icons.qrc">
+      <normaloff>:/new/prefix1/icons/pantilt_.png</normaloff>:/new/prefix1/icons/pantilt_.png</iconset>
+    </property>
+    <property name="iconSize">
+     <size>
+      <width>200</width>
+      <height>200</height>
+     </size>
+    </property>
+    <property name="toolButtonStyle">
+     <enum>Qt::ToolButtonIconOnly</enum>
+    </property>
+   </widget>
+   <widget class="QToolButton" name="btnNuc">
+    <property name="geometry">
+     <rect>
+      <x>1149</x>
+      <y>35</y>
+      <width>121</width>
+      <height>121</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <family>Ubuntu</family>
+      <pointsize>40</pointsize>
+      <weight>75</weight>
+      <bold>true</bold>
+     </font>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">border: 2px white;
+border-radius: 10px;
+padding: 0 8px;
+background: white;</string>
+    </property>
+    <property name="text">
+     <string>NUC</string>
+    </property>
+    <property name="icon">
+     <iconset resource="Icons.qrc">
+      <normaloff>:/new/prefix1/icons/shutter_closed.png</normaloff>:/new/prefix1/icons/shutter_closed.png</iconset>
+    </property>
+    <property name="iconSize">
+     <size>
+      <width>200</width>
+      <height>200</height>
+     </size>
+    </property>
+    <property name="toolButtonStyle">
+     <enum>Qt::ToolButtonIconOnly</enum>
+    </property>
+   </widget>
+   <widget class="QToolButton" name="btnZoom">
+    <property name="geometry">
+     <rect>
+      <x>1149</x>
+      <y>180</y>
+      <width>121</width>
+      <height>121</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <family>Ubuntu</family>
+      <pointsize>46</pointsize>
+      <weight>75</weight>
+      <bold>true</bold>
+     </font>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">border: 2px white;
+border-radius: 10px;
+padding: 0 8px;
+background: white;</string>
+    </property>
+    <property name="text">
+     <string>1X</string>
+    </property>
+    <property name="icon">
+     <iconset resource="Icons.qrc">
+      <normaloff>:/new/prefix1/icons/zoom1.png</normaloff>:/new/prefix1/icons/zoom1.png</iconset>
+    </property>
+    <property name="iconSize">
+     <size>
+      <width>200</width>
+      <height>200</height>
+     </size>
+    </property>
+    <property name="toolButtonStyle">
+     <enum>Qt::ToolButtonIconOnly</enum>
+    </property>
+   </widget>
+   <widget class="QToolButton" name="btnPolarity">
+    <property name="geometry">
+     <rect>
+      <x>1149</x>
+      <y>330</y>
+      <width>121</width>
+      <height>121</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <family>Ubuntu</family>
+      <pointsize>26</pointsize>
+      <weight>75</weight>
+      <bold>true</bold>
+     </font>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">border: 2px white;
+border-radius: 10px;
+padding: 0 8px;
+background: white;</string>
+    </property>
+    <property name="text">
+     <string>POLA-
+RITY</string>
+    </property>
+    <property name="icon">
+     <iconset resource="Icons.qrc">
+      <normaloff>:/new/prefix1/icons/palette.png</normaloff>:/new/prefix1/icons/palette.png</iconset>
+    </property>
+    <property name="iconSize">
+     <size>
+      <width>200</width>
+      <height>200</height>
+     </size>
+    </property>
+   </widget>
+   <widget class="QWidget" name="widget" native="true">
+    <property name="geometry">
+     <rect>
+      <x>140</x>
+      <y>35</y>
+      <width>1001</width>
+      <height>711</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <family>Ubuntu</family>
+     </font>
+    </property>
+    <widget class="QToolButton" name="btnExpand">
+     <property name="geometry">
+      <rect>
+       <x>910</x>
+       <y>620</y>
+       <width>91</width>
+       <height>91</height>
+      </rect>
+     </property>
+     <property name="font">
+      <font>
+       <family>Ubuntu</family>
+      </font>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">border: 2px rgba(255, 255, 255, 0);
+border-radius: 10px;
+padding: 0 8px;
+background: rgba(255, 255, 255, 0);</string>
+     </property>
+     <property name="text">
+      <string/>
+     </property>
+     <property name="icon">
+      <iconset resource="Icons.qrc">
+       <normaloff>:/new/prefix1/icons/expand.png</normaloff>:/new/prefix1/icons/expand.png</iconset>
+     </property>
+     <property name="iconSize">
+      <size>
+       <width>90</width>
+       <height>90</height>
+      </size>
+     </property>
+    </widget>
+    <widget class="QToolButton" name="btnPantilt_left">
+     <property name="geometry">
+      <rect>
+       <x>-11</x>
+       <y>280</y>
+       <width>150</width>
+       <height>150</height>
+      </rect>
+     </property>
+     <property name="font">
+      <font>
+       <family>Ubuntu</family>
+      </font>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">border: 2px rgba(255, 255, 255, 0);
+border-radius: 10px;
+padding: 0 8px;
+background: rgba(255, 255, 255, 0);</string>
+     </property>
+     <property name="text">
+      <string/>
+     </property>
+     <property name="icon">
+      <iconset resource="Icons.qrc">
+       <normaloff>:/new/prefix1/icons/left.png</normaloff>:/new/prefix1/icons/left.png</iconset>
+     </property>
+     <property name="iconSize">
+      <size>
+       <width>150</width>
+       <height>150</height>
+      </size>
+     </property>
+    </widget>
+    <widget class="QToolButton" name="btnPantilt_up">
+     <property name="geometry">
+      <rect>
+       <x>425</x>
+       <y>-21</y>
+       <width>150</width>
+       <height>150</height>
+      </rect>
+     </property>
+     <property name="font">
+      <font>
+       <family>Ubuntu</family>
+      </font>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">border: 2px rgba(255, 255, 255, 0);
+border-radius: 10px;
+padding: 0 8px;
+background: rgba(255, 255, 255, 0);</string>
+     </property>
+     <property name="text">
+      <string/>
+     </property>
+     <property name="icon">
+      <iconset resource="Icons.qrc">
+       <normaloff>:/new/prefix1/icons/up.png</normaloff>:/new/prefix1/icons/up.png</iconset>
+     </property>
+     <property name="iconSize">
+      <size>
+       <width>150</width>
+       <height>150</height>
+      </size>
+     </property>
+    </widget>
+    <widget class="QToolButton" name="btnPantilt_right">
+     <property name="geometry">
+      <rect>
+       <x>861</x>
+       <y>280</y>
+       <width>150</width>
+       <height>150</height>
+      </rect>
+     </property>
+     <property name="font">
+      <font>
+       <family>Ubuntu</family>
+      </font>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">border: 2px rgba(255, 255, 255, 0);
+border-radius: 10px;
+padding: 0 8px;
+background: rgba(255, 255, 255, 0);</string>
+     </property>
+     <property name="text">
+      <string/>
+     </property>
+     <property name="icon">
+      <iconset resource="Icons.qrc">
+       <normaloff>:/new/prefix1/icons/right.png</normaloff>:/new/prefix1/icons/right.png</iconset>
+     </property>
+     <property name="iconSize">
+      <size>
+       <width>150</width>
+       <height>150</height>
+      </size>
+     </property>
+    </widget>
+    <widget class="QToolButton" name="btnPantilt_down">
+     <property name="geometry">
+      <rect>
+       <x>425</x>
+       <y>580</y>
+       <width>150</width>
+       <height>150</height>
+      </rect>
+     </property>
+     <property name="font">
+      <font>
+       <family>Ubuntu</family>
+      </font>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">border: 2px rgba(255, 255, 255, 0);
+border-radius: 10px;
+padding: 0 8px;
+background: rgba(255, 255, 255, 0);</string>
+     </property>
+     <property name="text">
+      <string/>
+     </property>
+     <property name="icon">
+      <iconset resource="Icons.qrc">
+       <normaloff>:/new/prefix1/icons/down.png</normaloff>:/new/prefix1/icons/down.png</iconset>
+     </property>
+     <property name="iconSize">
+      <size>
+       <width>150</width>
+       <height>150</height>
+      </size>
+     </property>
+    </widget>
+    <widget class="QFrame" name="Label">
+     <property name="geometry">
+      <rect>
+       <x>0</x>
+       <y>0</y>
+       <width>1001</width>
+       <height>711</height>
+      </rect>
+     </property>
+     <property name="font">
+      <font>
+       <family>Ubuntu</family>
+       <pointsize>18</pointsize>
+      </font>
+     </property>
+     <property name="frameShape">
+      <enum>QFrame::StyledPanel</enum>
+     </property>
+     <property name="frameShadow">
+      <enum>QFrame::Raised</enum>
+     </property>
+     <widget class="QLabel" name="frameLabel">
+      <property name="geometry">
+       <rect>
+        <x>5</x>
+        <y>6</y>
+        <width>990</width>
+        <height>700</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <family>Ubuntu</family>
+       </font>
+      </property>
+      <property name="text">
+       <string/>
+      </property>
+     </widget>
+    </widget>
+    <zorder>Label</zorder>
+    <zorder>btnExpand</zorder>
+    <zorder>btnPantilt_left</zorder>
+    <zorder>btnPantilt_right</zorder>
+    <zorder>btnPantilt_down</zorder>
+    <zorder>btnPantilt_up</zorder>
+   </widget>
+   <widget class="QToolButton" name="btnLRF">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>35</y>
+      <width>121</width>
+      <height>121</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <family>Ubuntu</family>
+      <pointsize>40</pointsize>
+      <weight>75</weight>
+      <bold>true</bold>
+     </font>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">border: 2px white;
+border-radius: 10px;
+padding: 0 8px;
+background: white;</string>
+    </property>
+    <property name="text">
+     <string>LRF</string>
+    </property>
+    <property name="icon">
+     <iconset resource="Icons.qrc">
+      <normaloff>:/new/prefix1/icons/lrf.png</normaloff>:/new/prefix1/icons/lrf.png</iconset>
+    </property>
+    <property name="iconSize">
+     <size>
+      <width>200</width>
+      <height>200</height>
+     </size>
+    </property>
+    <property name="toolButtonStyle">
+     <enum>Qt::ToolButtonIconOnly</enum>
+    </property>
+   </widget>
+   <widget class="QToolButton" name="btnTasks">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>625</y>
+      <width>121</width>
+      <height>121</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <family>Ubuntu</family>
+      <pointsize>24</pointsize>
+      <weight>75</weight>
+      <bold>true</bold>
+     </font>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">border: 2px white;
+border-radius: 10px;
+padding: 0 8px;
+background: white;</string>
+    </property>
+    <property name="text">
+     <string>TASKS</string>
+    </property>
+    <property name="icon">
+     <iconset resource="Icons.qrc">
+      <normaloff>:/new/prefix1/icons/tasks.png</normaloff>:/new/prefix1/icons/tasks.png</iconset>
+    </property>
+    <property name="iconSize">
+     <size>
+      <width>120</width>
+      <height>120</height>
+     </size>
+    </property>
+    <property name="toolButtonStyle">
+     <enum>Qt::ToolButtonIconOnly</enum>
+    </property>
+   </widget>
+   <widget class="QToolButton" name="btnScreenshot">
+    <property name="geometry">
+     <rect>
+      <x>1149</x>
+      <y>625</y>
+      <width>121</width>
+      <height>121</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <family>Ubuntu</family>
+      <pointsize>20</pointsize>
+      <weight>75</weight>
+      <bold>true</bold>
+     </font>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">border: 2px white;
+border-radius: 10px;
+padding: 0 8px;
+background: white;</string>
+    </property>
+    <property name="text">
+     <string>SCREEN
+SHOT</string>
+    </property>
+    <property name="icon">
+     <iconset resource="Icons.qrc">
+      <normaloff>:/new/prefix1/icons/scr.png</normaloff>:/new/prefix1/icons/scr.png</iconset>
+    </property>
+    <property name="iconSize">
+     <size>
+      <width>200</width>
+      <height>200</height>
+     </size>
+    </property>
+    <property name="toolButtonStyle">
+     <enum>Qt::ToolButtonIconOnly</enum>
+    </property>
+   </widget>
+   <widget class="QLabel" name="coordInfo">
+    <property name="geometry">
+     <rect>
+      <x>0</x>
+      <y>750</y>
+      <width>1281</width>
+      <height>50</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <family>Ubuntu</family>
+      <pointsize>30</pointsize>
+     </font>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">color:white;</string>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+   </widget>
+  </widget>
+ </widget>
+ <resources>
+  <include location="Icons.qrc"/>
+ </resources>
+ <connections/>
+</ui>

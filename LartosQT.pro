@@ -1,0 +1,399 @@
+QT       += core gui network
+DEFINES += CURL_STATICLIB
+#DEFINES += _EXCLUDE_BSTR_
+#DEFINES += LINUX_VER = 1
+
+greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
+CONFIG += c++11
+
+LIBS += -L$$PWD/lib/arm -lhcnetsdk -lPlayCtrl -lAudioRender -lSuperRender
+#LIBS += -L$$PWD/lib/ -larena -larenac -lsavec -llucidlog -lgentl
+# You can make your code fail to compile if it uses deprecated APIs.
+# In order to do so, uncomment the following line.
+#DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
+
+SOURCES += \
+    coordinatesystem.cpp \
+    incorrect.cpp \
+    language.cpp \
+    main.cpp \
+    mainwindow.cpp \
+    mainwindowhead.cpp \
+    menu.cpp \
+    northadjustment.cpp \
+    selfcheck.cpp \
+    tasks.cpp \
+    variables.cpp \
+    Hik/ImageBuffer.cpp \
+    expanded.cpp \
+    Hik/global.cpp \
+    Merged/stdafx.cpp \
+    Application/CompassCalibration.c \
+    Application/GPSFormatter.c \
+    Configuration/ReadConfig.c \
+    esUtil/esShader.c \
+    esUtil/esTransform.c \
+    esUtil/esUtil.c \
+    esUtil/esUtil_X11.c \
+    jRead/jRead.c \
+    Merged/C_Acquisition.c \
+    Merged/LarDebug.c \
+    Merged/LarMaterial.c \
+    Merged/LarSprite.c \
+    Merged/LarSquare.c \
+    Merged/LarText.c \
+    Merged/LarTexture.c \
+    Periph/CommandsDataManager.c \
+    Periph/Compass.c \
+    Periph/CompassDataManager.c \
+    Periph/GPS.c \
+    Periph/GpsDataManager.c \
+    Periph/InterSomNetworking.c \
+    Periph/LucidCamera.c \
+    Periph/MUX.c \
+    Periph/NetworkVariables.c \
+    Periph/PanTiltU.c \
+    Periph/PeriphScheduler.c \
+    Periph/Rangefinder.c \
+    Periph/SoftwareTimer.c \
+    Periph/Uart.c \
+    Periph/UdpSocket.c \
+    esUtil/Init.c \
+    Periph/LucidCameraDraw.c \
+    Periph/PIC.c \
+    Periph/ButtonsHead.c \
+    Periph/ButtonsController.c \
+    mediabrowser.cpp \
+    SaveLartosUserData.cpp \
+    resultselection.cpp \
+    LartosPointObj.cpp \
+    SaveLartosPoints.cpp \
+    General/CHARString.cpp \
+    General/GlobalVariables.cpp \
+    TransLib/albers.cpp \
+    TransLib/azeq.cpp \
+    TransLib/bng.cpp \
+    TransLib/bonne.cpp \
+    TransLib/cassini.cpp \
+    TransLib/cyleqa.cpp \
+    TransLib/eckert4.cpp \
+    TransLib/eckert6.cpp \
+    TransLib/eqdcyl.cpp \
+    TransLib/geocent.cpp \
+    TransLib/geodw.cpp \
+    TransLib/geoid.cpp \
+    TransLib/georef.cpp \
+    TransLib/gnomonic.cpp \
+    TransLib/grinten.cpp \
+    TransLib/lambert.cpp \
+    TransLib/loccart.cpp \
+    TransLib/mercator.cpp \
+    TransLib/mgrs.cpp \
+    TransLib/miller.cpp \
+    TransLib/mollweid.cpp \
+    TransLib/neys.cpp \
+    TransLib/nzmg.cpp \
+    TransLib/omerc.cpp \
+    TransLib/orthogr.cpp \
+    TransLib/PointCoo.cpp \
+    TransLib/polarst.cpp \
+    TransLib/polycon.cpp \
+    TransLib/projection.cpp \
+    TransLib/secret.cpp \
+    TransLib/sinusoid.cpp \
+    TransLib/stereogr.cpp \
+    TransLib/tranmerc.cpp \
+    TransLib/transform.cpp \
+    TransLib/TransHelper.cpp \
+    TransLib/trcyleqa.cpp \
+    TransLib/TrUnivw.cpp \
+    TransLib/ups.cpp \
+    TransLib/utm.cpp \
+    calibration.cpp \
+    usbdevice.cpp \
+    dialogprogress.cpp\
+    entering.cpp \ 
+    Periph/GpioWrapper.c \ 
+    BtnControllerEvManager.cpp \
+    BtnHeadEvManager.cpp \
+    Periph/Shaders.c \
+    Periph/RangefinderDataManager.c \
+    Periph/PtuDataManager.c \
+    Hik/CaptureThread.cpp \
+    Hik/Controller.cpp \
+    Hik/hikvision.cpp \
+    Hik/ProcessingThread.cpp \
+    Periph/Diagnostic.c \
+    Periph/PicDataManager.c \
+    Periph/CamerasDataManager.c \
+    Periph/CamerasController.c \
+    Periph/HikCurlWrapper.c \
+    Application/CompassCalibration_PTU.c \
+    Application/SharedVariables.c \
+    Periph/ProxSensor.c
+
+HEADERS += \
+    LinuxPlayM4.h \
+    PlayM4.h \
+    bg.h \
+    coordinatesystem.h \
+    en.h \
+    entering.h \
+    incorrect.h \
+    language.h \
+    mainwindow.h \
+    mainwindowhead.h \
+    menu.h \
+    northAdjustment.h \
+    selfcheck.h \
+    tasks.h \
+    variables.h \
+    Hik/ImageBuffer.h \
+    expanded.h \
+    Application/CompassCalibration.h \
+    Application/GPSFormatter.h \
+    ArenaC/ArenaC.h \
+    ArenaC/ArenaCApi.h \
+    ArenaC/ArenaCBoolean.h \
+    ArenaC/ArenaCBuffer.h \
+    ArenaC/ArenaCCallback.h \
+    ArenaC/ArenaCCategory.h \
+    ArenaC/ArenaCChunkData.h \
+    ArenaC/ArenaCCommand.h \
+    ArenaC/ArenaCDefs.h \
+    ArenaC/ArenaCDevice.h \
+    ArenaC/ArenaCEnumEntry.h \
+    ArenaC/ArenaCEnumeration.h \
+    ArenaC/ArenaCFeatureStream.h \
+    ArenaC/ArenaCFloat.h \
+    ArenaC/ArenaCImage.h \
+    ArenaC/ArenaCImageFactory.h \
+    ArenaC/ArenaCInteger.h \
+    ArenaC/ArenaCNode.h \
+    ArenaC/ArenaCNodeMap.h \
+    ArenaC/ArenaCRegister.h \
+    ArenaC/ArenaCSelector.h \
+    ArenaC/ArenaCString.h \
+    ArenaC/ArenaCSystem.h \
+    ArenaC/ArenaCValue.h \
+    Configuration/ReadConfig.h \
+    esUtil/esUtil.h \
+    esUtil/esUtil_win.h \
+    Gles/egl.h \
+    Gles/eglext.h \
+    Gles/eglplatform.h \
+    Gles/gl2.h \
+    Gles/gl2ext.h \
+    Gles/gl2platform.h \
+    Gles/gl3.h \
+    Gles/gl3platform.h \
+    Gles/khrplatform.h \
+    jRead/jRead.h \
+    Merged/C_Acquisition.h \
+    Merged/LarDebug.h \
+    Merged/LarMaterial.h \
+    Merged/LarSprite.h \
+    Merged/LarSquare.h \
+    Merged/LarText.h \
+    Merged/LarTexture.h \
+    Merged/resource.h \
+    Merged/stdafx.h \
+    Merged/targetver.h \
+    Periph/CommandsDataManager.h \
+    Periph/Compass.h \
+    Periph/CompassDataManager.h \
+    Periph/GPS.h \
+    Periph/GpsDataManager.h \
+    Periph/InterSomNetworking.h \
+    Periph/LucidCamera.h \
+    Periph/MUX.h \
+    Periph/NetworkVariables.h \
+    Periph/PanTiltU.h \
+    Periph/PeriphScheduler.h \
+    Periph/Rangefinder.h \
+    Periph/SoftwareTimer.h \
+    Periph/Uart.h \
+    Periph/UdpSocket.h \
+    SaveC/SaveCApi.h \
+    SaveC/SaveCDefs.h \
+    SaveC/SaveCImageReader.h \
+    SaveC/SaveCImageWriter.h \
+    SaveC/SaveCVideoRecorder.h \
+    esUtil/Init.h \
+    Periph/LucidCameraDraw.h \
+    Periph/PIC.h \
+    Periph/ButtonsHead.h \
+    Periph/ButtonsController.h \
+    mediabrowser.h \
+    SaveLartosUserData.h \
+    resultselection.h \
+    LartosPointObj.h \
+    SaveLartosPoints.h \
+    ArenaC/ArenaC.h \
+    ArenaC/ArenaCApi.h \
+    ArenaC/ArenaCBoolean.h \
+    ArenaC/ArenaCBuffer.h \
+    ArenaC/ArenaCCallback.h \
+    ArenaC/ArenaCCategory.h \
+    ArenaC/ArenaCChunkData.h \
+    ArenaC/ArenaCCommand.h \
+    ArenaC/ArenaCDefs.h \
+    ArenaC/ArenaCDevice.h \
+    ArenaC/ArenaCEnumEntry.h \
+    ArenaC/ArenaCEnumeration.h \
+    ArenaC/ArenaCFeatureStream.h \
+    ArenaC/ArenaCFloat.h \
+    ArenaC/ArenaCImage.h \
+    ArenaC/ArenaCImageFactory.h \
+    ArenaC/ArenaCInteger.h \
+    ArenaC/ArenaCNode.h \
+    ArenaC/ArenaCNodeMap.h \
+    ArenaC/ArenaCRegister.h \
+    ArenaC/ArenaCSelector.h \
+    ArenaC/ArenaCString.h \
+    ArenaC/ArenaCSystem.h \
+    ArenaC/ArenaCValue.h \
+    Configuration/ReadConfig.h \
+    esUtil/esUtil.h \
+    esUtil/esUtil_win.h \
+    General/CHARString.h \
+    General/GlobalVariables.h \
+    Gles/egl.h \
+    Gles/eglext.h \
+    Gles/eglplatform.h \
+    Gles/gl2.h \
+    Gles/gl2ext.h \
+    Gles/gl2platform.h \
+    Gles/gl3.h \
+    Gles/gl3platform.h \
+    Gles/khrplatform.h \
+    SaveC/SaveCApi.h \
+    SaveC/SaveCDefs.h \
+    SaveC/SaveCImageReader.h \
+    SaveC/SaveCImageWriter.h \
+    SaveC/SaveCVideoRecorder.h \
+    TransLib/albers.h \
+    TransLib/azeq.h \
+    TransLib/bng.h \
+    TransLib/bonne.h \
+    TransLib/cassini.h \
+    TransLib/cyleqa.h \
+    TransLib/eckert4.h \
+    TransLib/eckert6.h \
+    TransLib/eqdcyl.h \
+    TransLib/geocent.h \
+    TransLib/geodw.h \
+    TransLib/geoid.h \
+    TransLib/georef.h \
+    TransLib/gnomonic.h \
+    TransLib/grinten.h \
+    TransLib/lambert.h \
+    TransLib/loccart.h \
+    TransLib/mercator.h \
+    TransLib/mgrs.h \
+    TransLib/miller.h \
+    TransLib/mollweid.h \
+    TransLib/neys.h \
+    TransLib/nzmg.h \
+    TransLib/omerc.h \
+    TransLib/orthogr.h \
+    TransLib/PointCoo.h \
+    TransLib/polarst.h \
+    TransLib/polycon.h \
+    TransLib/projection.h \
+    TransLib/secret.h \
+    TransLib/sinusoid.h \
+    TransLib/stereogr.h \
+    TransLib/tranmerc.h \
+    TransLib/transform.h \
+    TransLib/TransHelper.h \
+    TransLib/trcyleqa.h \
+    TransLib/TrUnivw.h \
+    TransLib/ups.h \
+    TransLib/utm.h \
+    bg.h \
+    calibration.h \
+    en.h \
+    Hik/global.h \
+    LinuxPlayM4.h \
+    PlayM4.h \
+    usbdevice.h \
+    dialogprogress.h\
+    Periph/GpioWrapper.h \
+    BtnControllerEvManager.h \
+    BtnHeadEvManager.h \
+    Periph/Shaders.h \
+    Periph/RangefinderDataManager.h \
+    Periph/PtuDataManager.h \
+    Hik/CaptureThread.h \
+    Hik/Controller.h \
+    Hik/HCNetSDK.h \
+    Hik/hikvision.h \
+    Hik/ProcessingThread.h \
+    Periph/Diagnostic.h \
+    Periph/PicDataManager.h \
+    Periph/CamerasDataManager.h \
+    Periph/CamerasController.h \
+    Periph/HikCurlWrapper.h \
+    Application/CompassCalibration_PTU.h \
+    Application/SharedVariables.h \
+    Periph/ProxSensor.h
+
+FORMS += \
+    coordinatesystem.ui \
+    mainwindow.ui \
+    calibration.ui \
+    entering.ui \
+    incorrect.ui \
+    language.ui \
+    mainwindowhead.ui \
+    mediabrowser.ui \
+    menu.ui \
+    expanded.ui \
+    northAdjustment.ui \
+    resultselection.ui \
+    selfcheck.ui \
+    tasks.ui \
+    dialogprogress.ui
+
+RESOURCES += \
+    Icons.qrc
+
+INCLUDEPATH += $$PWD/ffmpeg
+DEPENDPATH += $$PWD/ffmpeg
+
+INCLUDEPATH += $$PWD/lib
+DEPENDPATH += $$PWD/lib
+
+INCLUDEPATH += $$PWD/GenICam/library/lib/Linux64_ARM
+DEPENDPATH += $$PWD/GenICam/library/lib/Linux64_ARM
+
+LIBS += -L$$PWD/lib/arm/ -lhcnetsdk
+LIBS += -L$$PWD/lib/arm/ -lPlayCtrl
+LIBS += -L$$PWD/lib/arm/ -lAudioRender
+LIBS += -L$$PWD/lib/arm/ -lSuperRender
+LIBS += -L$$PWD/lib/ -larenac
+LIBS += -L$$PWD/lib/ -larena
+LIBS += -L$$PWD/lib/ -lsavec
+LIBS += -L$$PWD/lib/ -lsave
+LIBS += -L$$PWD/lib/ -llucidlog
+LIBS += -L$$PWD/lib/ -lgentl
+LIBS += -L$$PWD/lib/ -lpthread
+LIBS += -L$$PWD/ffmpeg/ -lavcodec
+LIBS += -L$$PWD/ffmpeg/ -lavformat
+LIBS += -L$$PWD/ffmpeg/ -lavutil
+LIBS += -L$$PWD/ffmpeg/ -lswresample
+LIBS += -L$$PWD/GenICam/library/lib/Linux64_ARM/ -lGCBase_gcc54_v3_3_LUCID
+LIBS += -L$$PWD/GenICam/library/lib/Linux64_ARM/ -lGenApi_gcc54_v3_3_LUCID
+LIBS += -L$$PWD/GenICam/library/lib/Linux64_ARM/ -lLog_gcc54_v3_3_LUCID
+LIBS += -L$$PWD/GenICam/library/lib/Linux64_ARM/ -llog4cpp_gcc54_v3_3_LUCID
+LIBS += -L$$PWD/GenICam/library/lib/Linux64_ARM/ -lMathParser_gcc54_v3_3_LUCID
+LIBS += -L$$PWD/GenICam/library/lib/Linux64_ARM/ -lNodeMapData_gcc54_v3_3_LUCID
+LIBS += -L$$PWD/GenICam/library/lib/Linux64_ARM/ -lXmlParser_gcc54_v3_3_LUCID
+
+LIBS += -lGLESv2
+LIBS += -lEGL
+LIBS += -lX11
+LIBS += -lm
+
+LIBS += -L/usr/local/include/ -lwiringPi -lcrypt

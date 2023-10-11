@@ -1,0 +1,95 @@
+#ifndef MAINWINDOW_H
+#define MAINWINDOW_H
+
+#include <QDialog>
+#include <QMediaPlayer>
+#include <QVideoWidget>
+#include "hikvision.h"
+#include <QMainWindow>
+
+QT_BEGIN_NAMESPACE
+namespace Ui { class MainWindow; }
+QT_END_NAMESPACE
+
+class MainWindow : public QMainWindow
+{
+    Q_OBJECT
+
+public:
+    MainWindow(QWidget *parent = nullptr);
+    ~MainWindow();
+
+    void switchToBG();
+
+    void switchToEN();
+
+    void setZoom();
+
+protected:
+    bool eventFilter(QObject *obj, QEvent *event);
+
+private slots:
+
+    void hidePanTilt();
+
+    void showPanTilt();
+
+    void MakeScreenshot();
+
+    void on_btnMedia_pressed();
+
+    void on_btnMedia_released();
+
+    void on_btnExpand_pressed();
+
+    void on_btnTasks_released();
+
+    void on_btnZoom_pressed();
+
+    void on_btnZoom_released();
+
+    void on_btnMenu_released();
+
+    void on_btnDayir_pressed();
+
+    void on_btnTasks_pressed();
+
+    void on_btnMenu_pressed();
+
+    void on_btnExpand_released();
+
+    void on_btnNuc_pressed();
+
+    void on_btnScreenshot_pressed();
+
+    void on_btnScreenshot_released();
+
+    void on_btnPolarity_pressed();
+
+    void on_btnNuc_released();
+
+    void on_btnPantilt_pressed();
+
+    void on_btnPantilt_up_pressed();
+
+    void on_btnPantilt_up_released();
+
+    void on_btnPantilt_down_pressed();
+
+    void on_btnPantilt_down_released();
+
+    void on_btnPantilt_left_pressed();
+
+    void on_btnPantilt_left_released();
+
+    void on_btnPantilt_right_pressed();
+
+    void on_btnPantilt_right_released();
+
+private:
+    Ui::MainWindow *ui;
+    QMediaPlayer* player;
+    QVideoWidget* videoWidget;
+    HikVision* hikVision;
+};
+#endif // MAINWINDOW_H

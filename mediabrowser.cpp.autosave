@@ -1,0 +1,480 @@
+#include "mediabrowser.h"
+#include "ui_mediabrowser.h"
+
+#include "bg.h"
+#include "en.h"
+
+#include"variables.h"
+
+#include <QDir>
+#include <QDebug>
+#include <QFileSystemModel>
+#include <QFile>
+#include <QPixmap>
+#include <QKeyEvent>
+#include <QStorageInfo>
+#include <qmessagebox.h>
+#include <QHBoxLayout>
+#include <QProgressDialog>
+#include <QFutureWatcher>
+#include <QThread>
+#include <QtWidgets>
+
+MediaBrowser::MediaBrowser(QWidget *parent) :
+    QDialog(parent),
+    ui(new Ui::MediaBrowser)
+{
+    ui->setupUi(this);
+
+    ui->btnCopy->setEnabled(false);
+    ui->btnCopyAll->setEnabled(false);
+
+    this->setWindowFlags(Qt::FramelessWindowHint);
+    this->setWindowFlag(Qt::WindowStaysOnTopHint);
+
+    ui->imageBrowser->setFocus();
+    listSelected = true;
+
+    MediaBrowser::createMediaDirectory();
+
+
+    QString path = QDir::homePath() + directory;
+    QDir imageDir(path);
+    if(!(imageDir.isEmpty()))
+    {
+        ui->btnCopyAll->setEnabled(true);
+    }  
+}
+
+MediaBrowser::~MediaBrowser()
+{
+    delete ui;
+}
+
+void MediaBrowser::switchToBG()
+{
+    ui->btnCopy->setText(btnCopyTxt_BG);
+    ui->btnCopyAll->setText(btnCopyAllTxt_BG);
+    ui->btnBack->setText(btnBackTxt_BG);
+
+    flgBG_mb = true;
+}
+
+void MediaBrowser::switchToEN()
+{
+    ui->btnCopy->setText(btnCopyTxt_EN);
+    ui->btnCopyAll->setText(btnCopyAllTxt_EN);
+    ui->btnBack->setText(btnBackTxt_EN);
+
+    flgBG_mb = false;
+}
+
+void MediaBrowser::createMediaDirectory(){
+    QDir dir(pathToDir.homePath() + directory);
+    if (!dir.exists())
+        dir.mkpath(".");
+}
+
+void MediaBrowser::listFiles(){
+    listModel = new QFileSystemModel(this);
+    QString path = QDir::homePath() + directory;
+    QDir imageDir(path);
+    listFilesInfo = imageDir.entryInfoList();
+
+    for(int i = 0; i < listFilesInfo.size(); i++){
+        QFileInfo fileInfo = listFilesInfo.at(i);
+    }
+
+    ui->imageBrowser->setModel(listModel);
+    ui->imageBrowser->setRootIndex(listModel->setRootPath(path));
+}
+
+void MediaBrowser::on_imageBrowser_clicked(const QModelIndex &index)
+{
+    if(listFilesInfo.size() >= index.row()){
+        ui->btnCopy->setEnabled(true);
+        ui->imgViewer->clear();
+        int indexOfFile = index.row()+2;
+        indexOfSelectedImage = indexOfFile;
+        QFileInfo imageInfo = listFilesInfo.at(indexOfFile);
+        qDebug() << imageInfo.canonicalFilePath();
+        QPixmap pixmap(imageInfo.canonicalFilePath());
+        QTransform transform;
+        transform.rotate(90);
+        QPixmap transformed = pixmap.transformed(transform);
+
+        ui->imgViewer->setPixmap(transformed.scaled(920,575,Qt::IgnoreAspectRatio,Qt::SmoothTransformation));
+    }
+}
+
+void MediaBrowser::on_btnCopy_pressed()
+{
+    btnCopy_pressed();
+
+    MediaBrowser::copyToFlashDrive();
+}
+
+void MediaBrowser::on_btnCopy_released()
+{
+    btnCopy_released();
+}
+
+void MediaBrowser::on_btnBack_pressed()
+{
+    btnBack_pressed();
+}
+
+void MediaBrowser::on_btnBack_released()
+{
+    btnBack_released();
+
+    this->close();
+}
+
+void MediaBrowser::btnCopyAll_pressed()
+{
+    ui->btnCopyAll->setStyleSheet(
+                "border: 5px solid black; "
+                "border-radius: 10px;"
+                "padding: 0 8px;"
+                "background: gray;"
+                "color: black;"
+                );
+}
+
+void MediaBrowser::btnCopyAll_released()
+{
+    ui->btnCopyAll->setStyleSheet(
+                "border: 5px solid black; "
+                "border-radius: 10px;"
+                "padding: 0 8px;"
+                "background: white;"
+                "color: black;"
+                );
+}
+
+void MediaBrowser::btnCopyAll_selected()
+{
+    ui->btnCopyAll->setStyleSheet(
+                "border: 5px solid white; "
+                "border-radius: 10px;"
+                "padding: 0 8px;"
+                "background: gray;"
+                "color: black;"
+                );
+}
+
+void MediaBrowser::btnCopy_pressed()
+{
+    ui->btnCopy->setStyleSheet(
+                "border: 5px solid black; "
+                "border-radius: 10px;"
+                "padding: 0 8px;"
+                "background: gray;"
+                "color: black;"
+                );
+}
+
+void MediaBrowser::btnCopy_released()
+{
+    ui->btnCopy->setStyleSheet(
+                "border: 5px solid black; "
+                "border-radius: 10px;"
+                "padding: 0 8px;"
+                "background: white;"
+                "color: black;"
+                );
+}
+
+void MediaBrowser::btnCopy_selected()
+{
+    ui->btnCopy->setStyleSheet(
+                "border: 5px solid white; "
+                "border-radius: 10px;"
+                "padding: 0 8px;"
+                "background: gray;"
+                "color: black;"
+                );
+}
+
+void MediaBrowser::btnBack_pressed()
+{
+    ui->btnBack->setStyleSheet(
+                "border: 5px solid black; "
+                "border-radius: 10px;"
+                "padding: 0 8px;"
+                "background: gray;"
+                "color: black;"
+                );
+}
+
+void MediaBrowser::btnBack_released()
+{
+    ui->btnBack->setStyleSheet(
+                "border: 5px solid black; "
+                "border-radius: 10px;"
+                "padding: 0 8px;"
+                "background: white;"
+                "color: black;"
+                );
+}
+
+void MediaBrowser::btnBack_selected()
+{
+    ui->btnBack->setStyleSheet(
+                "border: 5px solid white; "
+                "border-radius: 10px;"
+                "padding: 0 8px;"
+                "background: gray;"
+                "color: black;"
+                );
+}
+
+void MediaBrowser::on_imageBrowser_pressed(const QModelIndex &index)
+{
+    listSelected = true;
+}
+
+void MediaBrowser::selectPrevious()
+{
+    QModelIndex index = ui->imageBrowser->currentIndex();
+    ui->label->setText(QString::number(index.row()) + " " +  QString::number(index.column()));
+
+    //if(index != ui->imageBrowser->model()->index(2,0))
+    if(index.row() != 0)
+    {
+        ui->imageBrowser->selectionModel()->setCurrentIndex(index.sibling(index.row()-1, index.column()), QItemSelectionModel::SelectCurrent);
+    }
+}
+
+void MediaBrowser::selectNext()
+{
+    QModelIndex index = ui->imageBrowser->currentIndex();
+    ui->label->setText(QString::number(index.row()) + " " +  QString::number(index.column()) + " " + QString::number(ui->imageBrowser->model()->rowCount()) + " " + QString::number(ui->imageBrowser->model()->columnCount()));
+
+    if(index != ui->imageBrowser->model()->index(ui->imageBrowser->model()->rowCount(), ui->imageBrowser->model()->columnCount()))
+        //else if(index.row() != ui->imageBrowser->model()->rowCount()-2)
+    {
+        ui->imageBrowser->selectionModel()->setCurrentIndex(index.sibling(index.row()+1, index.column()), QItemSelectionModel::SelectCurrent);
+    }
+
+    else if(index == ui->imageBrowser->model()->index(ui->imageBrowser->model()->rowCount(), ui->imageBrowser->model()->columnCount()))
+    {
+        if(ui->btnCopy->isEnabled())
+        {
+        ui->btnCopy->setFocus();
+        btnCopy_selected();
+        listSelected = false;
+        }
+    }
+}
+
+void MediaBrowser::showSelected()
+{
+    QModelIndex index = ui->imageBrowser->currentIndex();
+    ui->imgViewer->clear();
+    int indexOfFile = index.row()+2;
+    QFileInfo imageInfo = listFilesInfo.at(indexOfFile);
+    QPixmap pixmap(imageInfo.canonicalFilePath());
+    ui->imgViewer->setPixmap(pixmap.scaled(800,600,Qt::IgnoreAspectRatio,Qt::SmoothTransformation));
+}
+
+void MediaBrowser::copyToFlashDrive(){
+    try{
+        MediaBrowser::scanForFlashDrive();
+        MediaBrowser::createFolderOnUsbDevice();
+
+        UsbDevice targetDev;
+
+        foreach (UsbDevice dev, usbDevices) {
+            if(dev.getDeviceFileSystem().contains("vfat")){
+                 targetDev = dev;
+            }
+        }
+        QString name = 
+        QString fileForWrite = listFilesInfo.at(indexOfSelectedImage).canonicalFilePath();
+        QString pathToUsb = targetDev.getDevicePath() + directory + "/" + listFilesInfo.at(indexOfSelectedImage).fileName();
+
+        if(QFile::copy(fileForWrite, pathToUsb)){
+            qDebug() << "success";
+            MediaBrowser::messageBox("Done", "Image was downloaded!");
+            return;
+        }
+        else {
+            MediaBrowser::messageBox("Error", "Image was not downloaded!");
+            return;
+        }
+    }catch (std::runtime_error& e)
+    {
+        qWarning() << "WARNING: could not open custom_distortion_file:" << "Image" << e.what();
+    }
+}
+
+void MediaBrowser::copyAllToFlashDrive(){
+    try{
+        QString path = QDir::homePath() + directory;
+        QDir imageDir(path);
+        if(!(imageDir.isEmpty()))
+        {
+        MediaBrowser::scanForFlashDrive();
+        MediaBrowser::createFolderOnUsbDevice();
+
+        UsbDevice targetDev;
+
+        foreach (UsbDevice dev, usbDevices) {
+            if(dev.getDeviceFileSystem().contains("vfat")){
+                 targetDev = dev;
+            }
+        }
+
+        for(int index = 1; index < listFilesInfo.count(); index++){
+            QString fileForWrite = listFilesInfo.at(index).canonicalFilePath();
+            QString pathToUsb = targetDev.getDevicePath() + directory + "/" + listFilesInfo.at(index).fileName();
+            if(QFile::copy(fileForWrite, pathToUsb)){
+                qDebug() << "success";
+            }
+            else {
+                qDebug() << "not success";
+            }
+        }
+        MediaBrowser::messageBox("Done", "Image was downloaded!");
+        }
+
+    }catch (std::runtime_error& e){
+        qWarning() << "WARNING: could not open custom_distortion_file:" << "Image" << e.what();
+    }
+}
+
+void MediaBrowser::messageBox(QString title, QString text){
+    QMessageBox::StandardButton reply;
+    reply = QMessageBox::information(this, title, text,
+                                     QMessageBox::Ok);
+    if (reply == QMessageBox::Ok) {
+
+    }
+}
+
+void MediaBrowser::createFolderOnUsbDevice(){
+    if(usbDevices.count()>0){
+        UsbDevice targetDev;
+
+        foreach (UsbDevice dev, usbDevices) {
+            if(dev.getDeviceFileSystem().contains("vfat")){
+                 targetDev = dev;
+            }
+        }
+
+        QString path = targetDev.getDevicePath() + directory;
+        QDir dir(path);
+        if (!dir.exists()){
+            dir.mkdir(targetDev.getDevicePath() + directory);
+        }
+    } else {
+        QMessageBox messageBox;
+        messageBox.information(0,"No USB Drive found!", "Please, insert Flash Drive in USB port!",QMessageBox::Ok, QMessageBox::Cancel);
+        messageBox.setFixedSize(500,200);
+    }
+}
+
+void MediaBrowser::scanForFlashDrive(){
+    int deviceCount = 1;
+    foreach(const QStorageInfo &storage, QStorageInfo::mountedVolumes()){
+        qDebug() << storage.rootPath();
+        UsbDevice myUsbDevice;
+        if(storage.isReadOnly()){
+            qDebug() << "isReadOnly:" << storage.name();
+        }
+        //qDebug() << "name:" << storage.name();
+        //qDebug() << "fileSystemType:" << storage.fileSystemType();
+        //qDebug() << "size:" << storage.bytesTotal()/1000/1000 << "MB";
+        //qDebug() << "availableSize:" << storage.bytesAvailable()/1000/1000 << "MB";
+
+        myUsbDevice.setDeviceName(storage.name());
+        myUsbDevice.setDeviceFileSystem(storage.fileSystemType());
+        myUsbDevice.setDevicePath(storage.rootPath());
+        myUsbDevice.setDeviceSize(QString::number(storage.bytesTotal()/1000/1000));
+        myUsbDevice.setDeviceFreeSize(QString::number(storage.bytesAvailable()/1000/1000));
+        myUsbDevice.setReadOnly(storage.isReadOnly());
+
+        if(storage.rootPath().contains("/media")){
+            usbDevices.insert(deviceCount, myUsbDevice);
+            deviceCount++;
+        }
+    }
+}
+
+void MediaBrowser::on_btnCopyAll_pressed()
+{
+    btnCopyAll_pressed();
+    MediaBrowser::copyAllToFlashDrive();
+}
+
+void MediaBrowser::gpioBtnOk()
+{
+    if(ui->btnBack->hasFocus())
+    {
+        on_btnBack_released();
+    }
+
+    else if(ui->btnCopyAll->hasFocus())
+    {
+        on_btnCopyAll_pressed();
+        btnCopyAll_released();
+    }
+
+    if(ui->imageBrowser->hasFocus())
+    {
+        showSelected();
+    }
+}
+
+void MediaBrowser::gpioBtnLeft()
+{
+    if(ui->btnBack->hasFocus())
+    {
+        btnBack_released();
+        ui->btnCopyAll->setFocus();
+        btnCopyAll_selected();
+    }
+    else if(ui->btnCopyAll->hasFocus())
+    {
+        btnCopyAll_released();
+        ui->btnCopy->setFocus();
+        btnCopy_selected();
+    }
+    else if(ui->btnCopy->hasFocus())
+    {
+        btnCopy_released();
+        ui->imageBrowser->setFocus();
+        listSelected = true;
+    }
+    else if(listSelected == true)
+    {
+        selectPrevious();
+    }
+}
+
+void MediaBrowser::gpioBtnRight()
+{
+    if(ui->btnCopy->hasFocus())
+    {
+        btnCopy_released();
+        ui->btnCopyAll->setFocus();
+        btnCopyAll_selected();
+    }
+    else if(ui->btnCopyAll->hasFocus())
+    {
+        btnCopyAll_released();
+        ui->btnBack->setFocus();
+        btnBack_selected();
+    }
+    else if(listSelected == true)
+    {
+        selectNext();
+    }
+}
+
+void MediaBrowser::on_btnCopyAll_released()
+{
+    btnCopyAll_released();
+}

@@ -1,0 +1,584 @@
+#include "mainwindow.h"
+#include "ui_mainwindow.h"
+
+#include "expanded.h"
+#include "ui_expanded.h"
+
+#include "tasks.h"
+#include "ui_tasks.h"
+
+#include "menu.h"
+#include "ui_menu.h"
+
+#include "hikvision.h"
+#include "variables.h"
+
+#include <QDesktopWidget>
+#include <QScreen>
+
+MainWindow::MainWindow(QWidget *parent)
+    : QMainWindow(parent)
+    , ui(new Ui::MainWindow)
+{
+
+    ui->setupUi(this);
+
+    this->setWindowFlags(Qt::FramelessWindowHint);
+
+    //QCursor cursor(Qt::BlankCursor);
+    //QApplication::setOverrideCursor(cursor);
+    //QApplication::changeOverrideCursor(cursor);
+
+    setAttribute(Qt::WA_AcceptTouchEvents, true);
+
+    ui->btnNuc->setEnabled(false);
+    ui->btnPolarity->setEnabled(false);
+    ui->btnPantilt_up->hide();
+    ui->btnPantilt_down->hide();
+    ui->btnPantilt_left->hide();
+    ui->btnPantilt_right->hide();
+
+    qApp->installEventFilter(this);
+
+    player = new QMediaPlayer(this);
+    videoWidget = new QVideoWidget(this);
+    player->setVideoOutput(ui->videoWidget);
+    player->setMedia(QUrl(hikVision->rtspLink()));
+}
+
+MainWindow::~MainWindow()
+{
+    delete ui;
+}
+
+
+bool MainWindow::eventFilter(QObject *obj, QEvent *event)
+{
+    if (obj == this && event->type() == QEvent::WindowUnblocked)
+    {
+        if(day_ir == true)
+        {
+            player->play();
+        }
+    }
+    return QObject::eventFilter(obj, event);
+}
+
+//void MainWindow::setZoom()
+//{
+//    if(day_ir == true)
+//    {
+//        ui->btnZoom->setText(ir_zoom);
+//    }
+//    else if(day_ir == false)
+//    {
+//        ui->btnZoom->setText(day_zoom);
+//    }
+//}
+
+void MainWindow::switchToBG()
+{
+    flgBG_w = true;
+}
+
+void MainWindow::switchToEN()
+{
+    flgBG_w = false;
+}
+
+void MainWindow::hidePanTilt()
+{
+    ui->btnPantilt_up->hide();
+    ui->btnPantilt_down->hide();
+    ui->btnPantilt_left->hide();
+    ui->btnPantilt_right->hide();
+}
+
+void MainWindow::showPanTilt()
+{
+    ui->btnPantilt_up->show();
+    ui->btnPantilt_down->show();
+    ui->btnPantilt_left->show();
+    ui->btnPantilt_right->show();
+}
+
+
+void MainWindow::MakeScreenshot()
+{
+    QRect crop_rect(MainWindow().geometry().x(), MainWindow().geometry().y(), MainWindow().width(), MainWindow().height());
+    QImage pixmap = qApp->screens().at(0)->grabWindow(
+    QDesktopWidget().winId(),
+    crop_rect.left(),
+    crop_rect.top(),
+    crop_rect.width(),
+    crop_rect.height()).toImage();
+
+    QDateTime now = QDateTime::currentDateTime();
+    QString timestamp = now.toString(QLatin1String("dd.MM.yyyy hh-mm-ss"));
+
+    auto fileName = QString("D:/LartosM-Qt/screenshots/" + timestamp + ".bmp");
+    pixmap.save(fileName);
+}
+
+
+void MainWindow::on_btnMedia_pressed()
+{
+    ui->btnMedia->setStyleSheet(
+        "border: 2px gray; "
+        "border-radius: 10px; "
+        "background: gray;"
+    );
+}
+
+
+void MainWindow::on_btnMedia_released()
+{
+    ui->btnMedia->setStyleSheet(
+        "border: 2px white; "
+        "border-radius: 10px; "
+        "padding: 0 8px; "
+        "background: white;"
+    );
+}
+
+
+void MainWindow::on_btnExpand_pressed()
+{
+    ui->btnExpand->setStyleSheet(
+        "border: 2px gray; "
+        "border-radius: 10px;"
+        "padding: 0 8px;"
+        "background: gray;"
+    );
+}
+
+
+void MainWindow::on_btnTasks_released()
+{
+    ui->btnTasks->setStyleSheet(
+        "border: 2px white; "
+        "border-radius: 10px;"
+        "padding: 0 8px;"
+        "background: white;"
+        "color: black;");
+
+    player->stop();
+
+    Tasks t;
+    t.setModal(true);
+
+    if(flgBG_w == true)
+    {
+        t.switchToBG();
+    }
+    else if(flgBG_w == false)
+    {
+        t.switchToEN();
+    }
+
+    t.exec();
+}
+
+
+void MainWindow::on_btnZoom_pressed()
+{
+    ui->btnZoom->setStyleSheet(
+        "border: 2px gray; "
+        "border-radius: 10px;"
+        "background: gray;"
+    );
+}
+
+
+void MainWindow::on_btnZoom_released()
+{
+    ui->btnZoom->setStyleSheet(
+        "border: 2px white; "
+        "border-radius: 10px;"
+        "padding: 0 8px;"
+        "background: white;"
+    );
+
+    if(day_ir == true)
+    {
+        if(ui->btnZoom->text() == "ZOOM\n1X")
+        {
+            hikVision->makeZoom(2);
+            ui->btnZoom->setText("ZOOM\n2X");
+        }
+        else if(ui->btnZoom->text() == "ZOOM\n2X")
+        {
+            hikVision->makeZoom(3);
+            ui->btnZoom->setText("ZOOM\n4X");
+        }
+        else if (ui->btnZoom->text() == "ZOOM\n4X")
+        {
+            hikVision->makeZoom(4);
+            ui->btnZoom->setText("ZOOM\n8X");
+        }
+        else if (ui->btnZoom->text() == "ZOOM\n8X")
+        {
+            hikVision->makeZoom(1);
+            ui->btnZoom->setText("ZOOM\n1X");
+        }
+
+        ir_zoom = ui->btnZoom->text();
+    }
+    else if(day_ir == false)
+    {
+        day_zoom = ui->btnZoom->text();
+    }
+}
+
+
+void MainWindow::on_btnMenu_released()
+{
+    ui->btnMenu->setStyleSheet(
+        "border: 2px white; "
+        "border-radius: 10px;"
+        "padding: 0 8px;"
+        "background: white;"
+    );
+
+    Menu m;
+    m.setModal(true);
+    m.showFullScreen();
+
+    if(flgBG_w == true)
+    {
+        m.switchToBG();
+    }
+    else if(flgBG_w == false)
+    {
+        m.switchToEN();
+    }
+
+    m.setDateTime();
+
+    m.exec();
+}
+
+
+void MainWindow::on_btnDayir_pressed()
+{
+    if(day_ir == false)
+    {
+        ui->btnDayir->setStyleSheet(
+            "border: 2px gray; "
+            "border-radius: 10px;"
+            "padding: 0 8px;"
+            "background: gray;"
+            "color: white;"
+        );
+
+        ui->btnNuc->setEnabled(true);
+        ui->btnNuc->setStyleSheet(
+            "border: 2px white; "
+            "border-radius: 10px;"
+            "padding: 0 8px;"
+            "background: white;"
+            "color: black;"
+        );
+
+        ui->btnPolarity->setEnabled(true);
+        ui->btnPolarity->setStyleSheet(
+            "border: 2px white; "
+            "border-radius: 10px;"
+            "padding: 0 8px;"
+            "background: white;"
+            "color: black;"
+        );
+        polarity_ = false;
+
+        ui->btnZoom->setText(ir_zoom);
+
+        player->play();
+
+        day_ir = true;
+    }
+    else if(day_ir == true)
+    {
+        ui->btnDayir->setStyleSheet(
+            "border: 2px white; "
+            "border-radius: 10px;"
+            "padding: 0 8px;"
+            "background: white;"
+            "color: black;"
+        );
+
+
+        ui->btnNuc->setStyleSheet(
+            "border: 2px white; "
+            "border-radius: 10px;"
+            "padding: 0 8px;"
+            "background: white;"
+            "color: gray;"
+        );
+        ui->btnNuc->setEnabled(false);
+
+        ui->btnPolarity->setStyleSheet(
+            "border: 2px white; "
+            "border-radius: 10px;"
+            "padding: 0 8px;"
+            "background: white;"
+            "color: gray;"
+        );
+        ui->btnPolarity->setEnabled(false);
+        polarity_ = false;
+
+        player->stop();
+
+        ui->btnZoom->setText(day_zoom);
+
+        day_ir = false;
+    }
+}
+
+
+void MainWindow::on_btnTasks_pressed()
+{
+    ui->btnTasks->setStyleSheet(
+        "border: 2px gray; "
+        "border-radius: 10px;"
+        "padding: 0 8px;"
+        "background: gray;"
+    );
+}
+
+
+void MainWindow::on_btnMenu_pressed()
+{
+    ui->btnMenu->setStyleSheet(
+        "border: 2px gray; "
+        "border-radius: 10px;"
+        "padding: 0 8px;"
+        "background: gray;"
+    );
+}
+
+
+void MainWindow::on_btnExpand_released()
+{
+    ui->btnExpand->setStyleSheet(
+        "border: 2px rgba(255, 255, 255, 0); "
+        "border-radius: 10px;"
+        "padding: 0 8px;"
+        "background: rgba(255, 255, 255, 0);"
+    );
+
+    player->stop();
+
+    Expanded ex;
+    ex.setModal(true);
+    ex.showFullScreen();
+    ex.taskStyle();
+
+    if(flgBG_w == true)
+    {
+        ex.switchToBG();
+    }
+    else if(flgBG_w == false)
+    {
+        ex.switchToEN();
+    }
+
+    ex.exec();
+}
+
+
+void MainWindow::on_btnNuc_pressed()
+{
+    ui->btnNuc->setStyleSheet(
+        "border: 2px gray; "
+        "border-radius: 10px; "
+        "background: gray;"
+    );
+
+    hikVision->doNuc();
+}
+
+
+void MainWindow::on_btnScreenshot_pressed()
+{
+    ui->btnScreenshot->setStyleSheet(
+        "border: 2px gray; "
+        "border-radius: 10px; "
+        "background: gray;"
+    );
+}
+
+
+void MainWindow::on_btnScreenshot_released()
+{
+    ui->btnScreenshot->setStyleSheet(
+        "border: 2px white; "
+        "border-radius: 10px; "
+        "padding: 0 8px; "
+        "background: white;"
+    );
+
+    MakeScreenshot();
+}
+
+
+void MainWindow::on_btnPolarity_pressed()
+{
+    if(polarity_ == false)
+    {
+        ui->btnPolarity->setStyleSheet(
+            "border: 2px gray; "
+            "border-radius: 10px;"
+            "padding: 0 8px;"
+            "background: gray;"
+            "color: white;"
+        );
+
+        ui->btnPolarity->setText("POLARITY\n\nBLACK\nHOT");
+
+        polarity_ = true;
+    }
+    else if(polarity_ == true)
+    {
+        ui->btnPolarity->setStyleSheet(
+            "border: 2px white; "
+            "border-radius: 10px;"
+            "padding: 0 8px;"
+            "background: white;"
+            "color: black;"
+        );
+
+        ui->btnPolarity->setText("POLARITY\n\nWHITE\nHOT");
+
+        polarity_ = false;
+    }
+}
+
+
+void MainWindow::on_btnNuc_released()
+{
+    ui->btnNuc->setStyleSheet(
+        "border: 2px white; "
+        "border-radius: 10px; "
+        "padding: 0 8px; "
+        "background: white;"
+    );
+}
+
+void MainWindow::on_btnPantilt_pressed()
+{
+    if(pantilt_ == false)
+    {
+        ui->btnPantilt->setStyleSheet(
+            "border: 2px gray; "
+            "border-radius: 10px;"
+            "padding: 0 8px;"
+            "background: gray;"
+            "color: white;"
+        );
+
+        showPanTilt();
+
+        pantilt_ = true;
+    }
+    else if(pantilt_ == true)
+    {
+        ui->btnPantilt->setStyleSheet(
+            "border: 2px white; "
+            "border-radius: 10px;"
+            "padding: 0 8px;"
+            "background: white;"
+            "color: black;"
+        );
+
+        hidePanTilt();
+
+        pantilt_ = false;
+    }
+}
+
+
+void MainWindow::on_btnPantilt_up_pressed()
+{
+    ui->btnPantilt_up->setStyleSheet(
+        "border: 2px rgba(255, 255, 255, 0);"
+        "border-radius: 10px;"
+        "background: rgba(255, 255, 255, 0);"
+    );
+}
+
+
+void MainWindow::on_btnPantilt_up_released()
+{
+    ui->btnPantilt_up->setStyleSheet(
+        "border: 2px rgba(255, 255, 255, 0);"
+        "border-radius: 10px;"
+        "padding: 0 8px;"
+        "background: rgba(255, 255, 255, 0);"
+    );
+}
+
+
+void MainWindow::on_btnPantilt_down_pressed()
+{
+    ui->btnPantilt_down->setStyleSheet(
+        "border: 2px rgba(255, 255, 255, 0);"
+        "border-radius: 10px;"
+        "background: rgba(255, 255, 255, 0);"
+    );
+}
+
+
+void MainWindow::on_btnPantilt_down_released()
+{
+    ui->btnPantilt_down->setStyleSheet(
+        "border: 2px rgba(255, 255, 255, 0);"
+        "border-radius: 10px;"
+        "padding: 0 8px;"
+        "background: rgba(255, 255, 255, 0);"
+    );
+}
+
+
+void MainWindow::on_btnPantilt_left_pressed()
+{
+    ui->btnPantilt_left->setStyleSheet(
+        "border: 2px rgba(255, 255, 255, 0);"
+        "border-radius: 10px;"
+        "background: rgba(255, 255, 255, 0);"
+    );
+}
+
+
+void MainWindow::on_btnPantilt_left_released()
+{
+    ui->btnPantilt_left->setStyleSheet(
+        "border: 2px rgba(255, 255, 255, 0);"
+        "border-radius: 10px;"
+        "padding: 0 8px;"
+        "background: rgba(255, 255, 255, 0);"
+    );
+}
+
+
+void MainWindow::on_btnPantilt_right_pressed()
+{
+    ui->btnPantilt_right->setStyleSheet(
+        "border: 2px rgba(255, 255, 255, 0);"
+        "border-radius: 10px;"
+        "background: rgba(255, 255, 255, 0);"
+    );
+}
+
+
+void MainWindow::on_btnPantilt_right_released()
+{
+    ui->btnPantilt_right->setStyleSheet(
+        "border: 2px rgba(255, 255, 255, 0);"
+        "border-radius: 10px;"
+        "padding: 0 8px;"
+        "background: rgba(255, 255, 255, 0);"
+    );
+}
+
+
+

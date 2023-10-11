@@ -1,0 +1,2508 @@
+#include "mainwindow.h"
+#include "ui_mainwindow.h"
+
+#include "expanded.h"
+#include "ui_expanded.h"
+
+#include "tasks.h"
+#include "ui_tasks.h"
+
+#include "menu.h"
+#include "ui_menu.h"
+
+#include "hikvision.h"
+#include "variables.h"
+
+#include "bg.h"
+#include "en.h"
+
+#include "mediabrowser.h"
+
+#include "resultselection.h"
+
+#include <QDesktopWidget>
+#include <QScreen>
+#include <QKeyEvent>
+
+
+extern "C"
+{
+#include "Periph/HikCameraDraw.h"
+#include "Periph/LucidCameraDraw.h"
+}
+
+QMainWindow* findMainWindow()
+{
+    for(QWidget* pWidget : QApplication::topLevelWidgets())
+    {
+        QMainWindow* pMainWnd = qobject_cast<QMainWindow*>(pWidget);
+        if (pMainWnd)
+           return pMainWnd;
+    }
+    return nullptr;
+}
+
+int updateFrameCount =0;
+
+QPixmap updateFrameDayCam(){
+
+    QPixmap pixmap;
+    if(DaycamDrawIsRunning()==true)
+    {
+    const uchar* buffer = (unsigned char*)GetLucidImageBuffer();
+    QImageCleanupFunction cleanupFunction = NULL;
+
+    long int width = GetDaycamImageWidth();
+    long int height = GetDaycamImageHeight();
+
+    QImage image(buffer, width, height, QImage::Format_RGBA8888, cleanupFunction, NULL );
+    image = image.mirrored(false,true);
+    pixmap = pixmap.fromImage(image.scaled(1000,700,Qt::IgnoreAspectRatio,Qt::SmoothTransformation));
+
+    updateFrameCount++;
+
+    /*if(updateFrameCount==250)
+    {
+        QString fileName("yourFile.png");
+
+        QFile file(fileName);
+        if(file.open(QIODevice::WriteOnly | QIODevice::Truncate))
+        {
+            pixmap.save(&file, "PNG");
+        }
+    }*/
+
+    MainWindow* pMainWindow = qobject_cast<MainWindow*>(findMainWindow());
+    if (!pMainWindow)
+    {}
+    else
+    {
+        pMainWindow->ui->frameLabel->setPixmap(pixmap);
+    }
+
+        return pixmap;
+    }
+    return pixmap;
+}
+
+
+static void TestCallback()
+{
+    updateFrameDayCam();
+}
+
+
+MainWindow::MainWindow(QWidget *parent)
+    : QMainWindow(parent),ui(new Ui::MainWindow)
+{
+  ui->setupUi(this);
+
+  this->setWindowFlags(Qt::FramelessWindowHint);
+  qApp->installEventFilter(this);
+
+  imageBufferSize=16;
+
+  controller = new Controller;
+  //open_mediaBrowser = new MediaBrowser;
+  setAttribute(Qt::WA_AcceptTouchEvents, true);
+
+
+  ui->btnNuc->setEnabled(false);
+  ui->btnPolarity->setEnabled(false);
+  ui->btnPantilt_up->hide();
+  ui->btnPantilt_down->hide();
+  ui->btnPantilt_left->hide();
+  ui->btnPantilt_right->hide();
+
+  ui->btnLRF->setFocus();
+
+  //polarity_wh = ui->btnPolarity->text();
+
+
+  //MainUtil();
+  AddImageProcessedCallback(((void*)&TestCallback));
+
+  //saveuserdata->setUserPassword("1971");
+  //saveuserdata->setMaintenancePassword("1234567890");
+
+}
+
+bool MainWindow::eventFilter(QObject *obj, QEvent *event)
+{
+  if (obj == this && event->type() == QEvent::WindowUnblocked)
+    {
+      if(day_ir == true)
+        {
+          ui->btnZoom->setText(ir_zoom);
+        }
+      else if(day_ir == false)
+        {
+          ui->btnZoom->setText(day_zoom);
+        }
+
+      if(flgBG_w == true)
+        {
+          switchToBG();
+        }
+      else if(flgBG_w == false)
+        {
+          switchToEN();
+        }
+    }
+  return QObject::eventFilter(obj, event);
+}
+
+void MainWindow::StartThermalCameraCapture()
+{
+    if(isCameraConnected==false)
+    {
+        isCameraConnected=controller->connectToCamera(imageBufferSize,false,5,5);
+        if(isCameraConnected==true)
+        {
+		qDebug() << "Start thermal";
+
+           // connect(controller->processingThread,SIGNAL(newFrame(QImage)),this,SLOT(updateFrame(QImage)));
+            sourceWidth=controller->captureThread->getInputSourceWidth();
+            sourceHeight=controller->captureThread->getInputSourceHeight();
+            //ThermalDrawStart();
+        }
+    }
+    /*else
+    {
+        ThermalDrawStart();
+    }*/
+}
+
+void MainWindow::StopThermalCameraCapture()
+{
+    if(isCameraConnected==true)
+    {
+        disconnect(controller->processingThread,SIGNAL(newFrame(QImage)),0,0);
+        //controller->stopProcessingThread();
+        //controller->stopCaptureThread();
+        //controller->deleteProcessingThread();
+        //controller->deleteCaptureThread();
+        ThermalDrawStop();
+        //isCameraConnected = false;
+        //ui->frameLabel->clear();
+    }
+    //delete controller;
+    /*ThermalDrawStop();*/
+}
+
+void MainWindow::updateFrame(const QImage &frame)
+{
+    QPixmap pixmap;
+    pixmap = pixmap.fromImage(frame.scaled(1000,700,Qt::IgnoreAspectRatio,Qt::SmoothTransformation));
+    ui->frameLabel->setPixmap(pixmap);
+}
+
+MainWindow::~MainWindow()
+{
+  delete ui;
+}
+
+void MainWindow::keyPressEvent(QKeyEvent *event)
+{
+  if(event->key() == Qt::Key_F6) //ok
+    {
+      gpioBtnOk();
+    }
+  else if(event->key() == Qt::Key_F3) //left
+    {
+      gpioBtnLeft();
+    }
+  else if(event->key() == Qt::Key_F4) //right
+    {
+      gpioBtnRight();
+    }
+  else if(event->key() == Qt::Key_F1) //up
+    {
+      gpioBtnUp();
+    }
+  else if(event->key() == Qt::Key_F2) //down
+    {
+      gpioBtnDown();
+    }
+  else if(event->key() == Qt::Key_Y) //pantilt up
+    {
+      btnPantilt_down_released();
+      btnPantilt_left_released();
+      btnPantilt_right_released();
+      ui->btnPantilt_up->setFocus();
+      btnPantilt_up_pressed();
+    }
+  else if(event->key() == Qt::Key_H) //pantilt down
+    {
+      btnPantilt_up_released();
+      btnPantilt_left_released();
+      btnPantilt_right_released();
+      ui->btnPantilt_down->setFocus();
+      btnPantilt_down_pressed();
+    }
+  else if(event->key() == Qt::Key_G) //pantilt left
+    {
+      btnPantilt_up_released();
+      btnPantilt_down_released();
+      btnPantilt_right_released();
+      ui->btnPantilt_left->setFocus();
+      btnPantilt_left_pressed();
+    }
+  else if(event->key() == Qt::Key_J) //pantilt right
+    {
+      btnPantilt_up_released();
+      btnPantilt_down_released();
+      btnPantilt_left_released();
+      ui->btnPantilt_right->setFocus();
+      btnPantilt_right_pressed();
+    }
+  else if(event->key() == Qt::Key_Z) //zoom/lrf
+    {
+      on_btnZoom_pressed();
+      on_btnZoom_released();
+    }
+}
+
+
+void MainWindow::btnLrf_pressed()
+{
+  ui->btnLRF->setStyleSheet(
+        "border: 2px gray; "
+        "border-radius: 10px;"
+        "padding: 0 8px;"
+        "background: gray;"
+        "color: white;"
+        );
+}
+
+
+void MainWindow::btnLrf_released()
+{
+  ui->btnLRF->setStyleSheet(
+        "border: 2px white; "
+        "border-radius: 10px;"
+        "padding: 0 8px;"
+        "background: white;"
+        "color: black;"
+        );
+}
+
+
+void MainWindow::btnLrf_selected()
+{
+  ui->btnLRF->setStyleSheet(
+        "border: 2px solid white; "
+        "border-radius: 10px;"
+        "padding: 0 8px;"
+        "background: gray;"
+        "color: white;"
+        );
+}
+
+
+void MainWindow::btnDayir_pressed()
+{
+  ui->btnDayir->setStyleSheet(
+        "border: 2px gray; "
+        "border-radius: 10px;"
+        "padding: 0 8px;"
+        "background: gray;"
+        "color: white;"
+        );
+}
+
+
+void MainWindow::btnDayir_released()
+{
+  ui->btnDayir->setStyleSheet(
+        "border: 2px white; "
+        "border-radius: 10px;"
+        "padding: 0 8px;"
+        "background: white;"
+        "color: black;"
+        );
+}
+
+
+void MainWindow::btnDayir_selected()
+{
+  ui->btnDayir->setStyleSheet(
+        "border: 2px solid white; "
+        "border-radius: 10px;"
+        "padding: 0 8px;"
+        "background: gray;"
+        "color: white;"
+        );
+}
+
+
+void MainWindow::btnPantilt_pressed()
+{
+  ui->btnPantilt->setStyleSheet(
+        "border: 2px gray; "
+        "border-radius: 10px;"
+        "padding: 0 8px;"
+        "background: gray;"
+        "color: white;"
+        );
+}
+
+
+void MainWindow::btnPantilt_released()
+{
+  ui->btnPantilt->setStyleSheet(
+        "border: 2px white; "
+        "border-radius: 10px;"
+        "padding: 0 8px;"
+        "background: white;"
+        "color: black;"
+        );
+}
+
+
+void MainWindow::btnPantilt_selected()
+{
+  ui->btnPantilt->setStyleSheet(
+        "border: 2px solid white; "
+        "border-radius: 10px;"
+        "padding: 0 8px;"
+        "background: gray;"
+        "color: white;"
+        );
+}
+
+
+void MainWindow::btnMedia_pressed()
+{
+  ui->btnMedia->setStyleSheet(
+        "border: 2px gray; "
+        "border-radius: 10px;"
+        "padding: 0 8px;"
+        "background: gray;"
+        "color: white;"
+        );
+}
+
+
+void MainWindow::btnMedia_released()
+{
+  ui->btnMedia->setStyleSheet(
+        "border: 2px white; "
+        "border-radius: 10px;"
+        "padding: 0 8px;"
+        "background: white;"
+        "color: black;"
+        );
+}
+
+
+void MainWindow::btnMedia_selected()
+{
+  ui->btnMedia->setStyleSheet(
+        "border: 2px solid white; "
+        "border-radius: 10px;"
+        "padding: 0 8px;"
+        "background: gray;"
+        "color: white;"
+        );
+}
+
+
+void MainWindow::btnTasks_pressed()
+{
+  ui->btnTasks->setStyleSheet(
+        "border: 2px gray; "
+        "border-radius: 10px;"
+        "padding: 0 8px;"
+        "background: gray;"
+        "color: white;"
+        );
+}
+
+
+void MainWindow::btnTasks_released()
+{
+  ui->btnTasks->setStyleSheet(
+        "border: 2px white; "
+        "border-radius: 10px;"
+        "padding: 0 8px;"
+        "background: white;"
+        "color: black;"
+        );
+}
+
+
+void MainWindow::btnTasks_selected()
+{
+  ui->btnTasks->setStyleSheet(
+        "border: 2px solid white; "
+        "border-radius: 10px;"
+        "padding: 0 8px;"
+        "background: gray;"
+        "color: white;"
+        );
+}
+
+
+void MainWindow::btnNuc_pressed()
+{
+  ui->btnNuc->setStyleSheet(
+        "border: 2px gray; "
+        "border-radius: 10px;"
+        "padding: 0 8px;"
+        "background: gray;"
+        "color: white;"
+        );
+}
+
+
+void MainWindow::btnNuc_released()
+{
+  ui->btnNuc->setStyleSheet(
+        "border: 2px white; "
+        "border-radius: 10px;"
+        "padding: 0 8px;"
+        "background: white;"
+        "color: black;"
+        );
+}
+
+
+void MainWindow::btnNuc_selected()
+{
+  ui->btnNuc->setStyleSheet(
+        "border: 2px solid white; "
+        "border-radius: 10px;"
+        "padding: 0 8px;"
+        "background: gray;"
+        "color: white;"
+        );
+}
+
+
+void MainWindow::btnZoom_pressed()
+{
+  ui->btnZoom->setStyleSheet(
+        "border: 2px gray; "
+        "border-radius: 10px;"
+        "padding: 0 8px;"
+        "background: gray;"
+        "color: white;"
+        );
+}
+
+
+void MainWindow::btnZoom_released()
+{
+  ui->btnZoom->setStyleSheet(
+        "border: 2px white; "
+        "border-radius: 10px;"
+        "padding: 0 8px;"
+        "background: white;"
+        "color: black;"
+        );
+}
+
+
+void MainWindow::btnZoom_selected()
+{
+  ui->btnZoom->setStyleSheet(
+        "border: 2px solid white; "
+        "border-radius: 10px;"
+        "padding: 0 8px;"
+        "background: gray;"
+        "color: white;"
+        );
+}
+
+
+void MainWindow::btnPolarity_pressed()
+{
+  ui->btnPolarity->setStyleSheet(
+        "border: 2px gray; "
+        "border-radius: 10px;"
+        "padding: 0 8px;"
+        "background: gray;"
+        "color: white;"
+
+        );
+}
+
+
+void MainWindow::btnPolarity_released()
+{
+  ui->btnPolarity->setStyleSheet(
+        "border: 2px white; "
+        "border-radius: 10px;"
+        "padding: 0 8px;"
+        "background: white;"
+        "color: black;"
+        );
+}
+
+
+void MainWindow::btnPolarity_selected()
+{
+  ui->btnPolarity->setStyleSheet(
+        "border: 2px solid white; "
+        "border-radius: 10px;"
+        "padding: 0 8px;"
+        "background: gray;"
+        "color: white;"
+        );
+}
+
+
+void MainWindow::btnMenu_pressed()
+{
+  ui->btnMenu->setStyleSheet(
+        "border: 2px gray; "
+        "border-radius: 10px;"
+        "padding: 0 8px;"
+        "background: gray;"
+        "color: white;"
+
+        );
+}
+
+
+void MainWindow::btnMenu_released()
+{
+  ui->btnMenu->setStyleSheet(
+        "border: 2px white; "
+        "border-radius: 10px;"
+        "padding: 0 8px;"
+        "background: white;"
+        "color: black;"
+        );
+}
+
+
+void MainWindow::btnMenu_selected()
+{
+  ui->btnMenu->setStyleSheet(
+        "border: 2px solid white; "
+        "border-radius: 10px;"
+        "padding: 0 8px;"
+        "background: gray;"
+        "color: white;"
+        );
+}
+
+
+void MainWindow::btnScreenshot_pressed()
+{
+  ui->btnScreenshot->setStyleSheet(
+        "border: 2px gray; "
+        "border-radius: 10px;"
+        "padding: 0 8px;"
+        "background: gray;"
+        "color: white;"
+        );
+}
+
+
+void MainWindow::btnScreenshot_released()
+{
+  ui->btnScreenshot->setStyleSheet(
+        "border: 2px white; "
+        "border-radius: 10px;"
+        "padding: 0 8px;"
+        "background: white;"
+        "color: black;"
+        );
+}
+
+
+void MainWindow::btnScreenshot_selected()
+{
+  ui->btnScreenshot->setStyleSheet(
+        "border: 2px solid white; "
+        "border-radius: 10px;"
+        "padding: 0 8px;"
+        "background: gray;"
+        "color: white;"
+        );
+}
+
+
+void MainWindow::btnExpand_pressed()
+{
+  ui->btnExpand->setStyleSheet(
+        "border: 2px gray; "
+        "border-radius: 10px;"
+        "padding: 0 8px;"
+        "background: gray;"
+        );
+}
+
+
+void MainWindow::btnExpand_released()
+{
+  ui->btnExpand->setStyleSheet(
+        "border: 2px rgba(255, 255, 255, 0); "
+        "border-radius: 10px;"
+        "padding: 0 8px;"
+        "background: rgba(255, 255, 255, 0);"
+        );
+}
+
+
+void MainWindow::btnExpand_selected()
+{
+  ui->btnExpand->setStyleSheet(
+        "border: 2px solid white; "
+        "border-radius: 10px;"
+        "padding: 0 8px;"
+        "background: gray;"
+        );
+}
+
+
+void MainWindow::btnPantilt_up_pressed()
+{
+  ui->btnPantilt_up->setStyleSheet(
+        "border: 2px rgba(255, 255, 255, 0);"
+        "border-radius: 10px;"
+        "background: rgba(255, 255, 255, 0);"
+        );
+}
+
+
+void MainWindow::btnPantilt_up_released()
+{
+  ui->btnPantilt_up->setStyleSheet(
+        "border: 2px rgba(255, 255, 255, 0);"
+        "border-radius: 10px;"
+        "padding: 0 8px;"
+        "background: rgba(255, 255, 255, 0);"
+        );
+}
+
+
+void MainWindow::btnPantilt_up_selected()
+{
+  ui->btnPantilt_up->setStyleSheet(
+        "border: 2px solid white;"
+        "border-radius: 10px;"
+        "background: rgba(255, 255, 255, 0);"
+        );
+}
+
+
+void MainWindow::btnPantilt_down_pressed()
+{
+  ui->btnPantilt_down->setStyleSheet(
+        "border: 2px rgba(255, 255, 255, 0);"
+        "border-radius: 10px;"
+        "background: rgba(255, 255, 255, 0);"
+        );
+}
+
+
+void MainWindow::btnPantilt_down_released()
+{
+  ui->btnPantilt_down->setStyleSheet(
+        "border: 2px rgba(255, 255, 255, 0);"
+        "border-radius: 10px;"
+        "padding: 0 8px;"
+        "background: rgba(255, 255, 255, 0);"
+        );
+}
+
+
+void MainWindow::btnPantilt_down_selected()
+{
+  ui->btnPantilt_down->setStyleSheet(
+        "border: 2px solid white;"
+        "border-radius: 10px;"
+        "background: rgba(255, 255, 255, 0);"
+        );
+}
+
+
+void MainWindow::btnPantilt_left_pressed()
+{
+  ui->btnPantilt_left->setStyleSheet(
+        "border: 2px rgba(255, 255, 255, 0);"
+        "border-radius: 10px;"
+        "background: rgba(255, 255, 255, 0);"
+        );
+}
+
+
+void MainWindow::btnPantilt_left_released()
+{
+  ui->btnPantilt_left->setStyleSheet(
+        "border: 2px rgba(255, 255, 255, 0);"
+        "border-radius: 10px;"
+        "padding: 0 8px;"
+        "background: rgba(255, 255, 255, 0);"
+        );
+}
+
+
+void MainWindow::btnPantilt_left_selected()
+{
+  ui->btnPantilt_left->setStyleSheet(
+        "border: 2px solid white;"
+        "border-radius: 10px;"
+        "background: rgba(255, 255, 255, 0);"
+        );
+}
+
+
+void MainWindow::btnPantilt_right_pressed()
+{
+  ui->btnPantilt_right->setStyleSheet(
+        "border: 2px rgba(255, 255, 255, 0);"
+        "border-radius: 10px;"
+        "background: rgba(255, 255, 255, 0);"
+        );
+}
+
+
+void MainWindow::btnPantilt_right_released()
+{
+  ui->btnPantilt_right->setStyleSheet(
+        "border: 2px rgba(255, 255, 255, 0);"
+        "border-radius: 10px;"
+        "padding: 0 8px;"
+        "background: rgba(255, 255, 255, 0);"
+        );
+}
+
+
+void MainWindow::btnPantilt_right_selected()
+{
+  ui->btnPantilt_right->setStyleSheet(
+        "border: 2px solid white;"
+        "border-radius: 10px;"
+        "background: rgba(255, 255, 255, 0);"
+        );
+}
+
+
+void MainWindow::switchToBG()
+{
+  if(day_ir == true)
+    {
+      ui->btnDayir->setText(btnIrTxt_BG);
+    }
+  else if(day_ir == false)
+    {
+      ui->btnDayir->setText(btnDayTxt_BG);
+    }
+
+  ui->btnPolarity->setText(btnpPolarityTxt_BG);
+  ui->btnTasks->setText(btnTasksTxt_BG);
+  ui->btnMenu->setText(btnMenuTxt_BG);
+  ui->btnScreenshot->setText(btnScrShotTxt_BG);
+  ui->btnLRF->setText(btnLrfTxt_BG);
+  ui->btnPantilt->setText(btnPanTiltTxt_BG);
+  ui->btnMedia->setText(btnMediaTxt_BG);
+
+  QFont font_lrf = ui->btnLRF->font();
+  font_lrf.setPointSize(16);
+  ui->btnLRF->setFont(font_lrf);
+
+  QFont font_dayir = ui->btnDayir->font();
+  font_dayir.setPointSize(18);
+  ui->btnDayir->setFont(font_dayir);
+
+  QFont font_pantillt = ui->btnPantilt->font();
+  font_pantillt.setPointSize(28);
+  ui->btnPantilt->setFont(font_pantillt);
+
+  QFont font_tasks = ui->btnTasks->font();
+  font_tasks.setPointSize(18);
+  ui->btnTasks->setFont(font_tasks);
+
+  QFont font_polarity = ui->btnPolarity->font();
+  font_polarity.setPointSize(20);
+  ui->btnPolarity->setFont(font_polarity);
+
+  QFont font_menu = ui->btnMenu->font();
+  font_menu.setPointSize(22);
+  ui->btnMenu->setFont(font_menu);
+
+  QFont font_scr = ui->btnScreenshot->font();
+  font_scr.setPointSize(16);
+  ui->btnScreenshot->setFont(font_scr);
+
+  QFont font_media = ui->btnMedia->font();
+  font_media.setPointSize(20);
+  ui->btnMedia->setFont(font_media);
+
+  flgBG_w = true;
+}
+
+void MainWindow::switchToEN()
+{
+  if(day_ir == true)
+    {
+      ui->btnDayir->setText(btnIrTxt_EN);
+    }
+  else if(day_ir == false)
+    {
+      ui->btnDayir->setText(btnDayTxt_EN);
+    }
+
+  ui->btnPolarity->setText(btnpPolarityTxt_EN);
+  ui->btnTasks->setText(btnTasksTxt_EN);
+  ui->btnMenu->setText(btnMenuTxt_EN);
+  ui->btnScreenshot->setText(btnScrShotTxt_EN);
+  ui->btnLRF->setText(btnLrfTxt_EN);
+  ui->btnPantilt->setText(btnPanTiltTxt_EN);
+  ui->btnMedia->setText(btnMediaTxt_EN);
+
+  QFont font_lrf = ui->btnLRF->font();
+  font_lrf.setPointSize(40);
+  ui->btnLRF->setFont(font_lrf);
+
+  QFont font_dayir = ui->btnDayir->font();
+  font_dayir.setPointSize(24);
+  ui->btnDayir->setFont(font_dayir);
+
+  QFont font_pantillt = ui->btnPantilt->font();
+  font_pantillt.setPointSize(30);
+  ui->btnPantilt->setFont(font_pantillt);
+
+  QFont font_tasks = ui->btnTasks->font();
+  font_tasks.setPointSize(24);
+  ui->btnTasks->setFont(font_tasks);
+
+  QFont font_polarity = ui->btnPolarity->font();
+  font_polarity.setPointSize(26);
+  ui->btnPolarity->setFont(font_polarity);
+
+  QFont font_menu = ui->btnMenu->font();
+  font_menu.setPointSize(26);
+  ui->btnMenu->setFont(font_menu);
+
+  QFont font_scr = ui->btnScreenshot->font();
+  font_scr.setPointSize(20);
+  ui->btnScreenshot->setFont(font_scr);
+
+  QFont font_media = ui->btnMedia->font();
+  font_media.setPointSize(24);
+  ui->btnMedia->setFont(font_media);
+
+  flgBG_w = false;
+}
+
+void MainWindow::hidePanTilt()
+{
+  ui->btnPantilt_up->hide();
+  ui->btnPantilt_down->hide();
+  ui->btnPantilt_left->hide();
+  ui->btnPantilt_right->hide();
+}
+
+void MainWindow::showPanTilt()
+{
+  ui->btnPantilt_up->show();
+  ui->btnPantilt_down->show();
+  ui->btnPantilt_left->show();
+  ui->btnPantilt_right->show();
+}
+
+void MainWindow::makeScreenshot()
+{
+  QRect crop_rect(MainWindow().geometry().x(), MainWindow().geometry().y(), MainWindow().width(), MainWindow().height());
+  QImage pixmap = qApp->screens().at(0)->grabWindow(
+        QDesktopWidget().winId(),
+        crop_rect.left(),
+        crop_rect.top(),
+        crop_rect.width(),
+        crop_rect.height()).toImage();
+
+  QDateTime now = QDateTime::currentDateTime();
+  QString timestamp = now.toString(QLatin1String("dd.MM.yyyy hh-mm-ss"));
+
+  QString directory = "/LartosImages";
+  QDir pathToDir;
+
+  auto fileName = QString(pathToDir.homePath()  + directory  + "/" + timestamp + ".bmp");
+  pixmap.save(fileName);
+}
+
+void MainWindow::on_btnMedia_pressed()
+{
+  btnLrf_released();
+  btnTasks_released();
+  btnZoom_released();
+  btnMenu_released();
+  btnScreenshot_released();
+  btnExpand_released();
+  btnPantilt_up_released();
+  btnPantilt_down_released();
+  btnPantilt_left_released();
+  btnPantilt_right_released();
+
+  if(day_ir == false)
+    {
+      btnDayir_released();
+    }
+
+  if(pantilt_ == false)
+    {
+      btnPantilt_released();
+    }
+
+  if(ui->btnPolarity->isEnabled())
+    {
+      if(polarity_ == false)
+        {
+          btnPolarity_released();
+        }
+    }
+  if(ui->btnNuc->isEnabled())
+    {
+      btnNuc_released();
+    }
+
+  btnMedia_pressed();
+}
+
+void MainWindow::openMediaBrowser()
+{
+  open_mediaBrowser.setModal(true);
+
+  if(flgBG_w == true)
+    {
+      open_mediaBrowser.switchToBG();
+    }
+  else if(flgBG_w == false)
+    {
+      open_mediaBrowser.switchToEN();
+    }
+  open_mediaBrowser.exec();
+}
+
+void MainWindow::on_btnMedia_released()
+{
+  btnMedia_released();
+
+  openMediaBrowser();
+}
+
+void MainWindow::on_btnExpand_pressed()
+{
+  btnLrf_released();
+  btnMedia_released();
+  btnTasks_released();
+  btnZoom_released();
+  btnMenu_released();
+  btnScreenshot_released();
+  btnPantilt_up_released();
+  btnPantilt_down_released();
+  btnPantilt_left_released();
+  btnPantilt_right_released();
+
+  if(day_ir == false)
+    {
+      btnDayir_released();
+    }
+
+  if(pantilt_ == false)
+    {
+      btnPantilt_released();
+    }
+
+  if(ui->btnPolarity->isEnabled())
+    {
+      if(polarity_ == false)
+        {
+          btnPolarity_released();
+        }
+    }
+
+  if(ui->btnNuc->isEnabled())
+    {
+      btnNuc_released();
+    }
+
+  btnExpand_pressed();
+}
+
+void MainWindow::openTasksWin()
+{
+  Tasks t;
+  t.setModal(true);
+
+  if(flgBG_w == true)
+    {
+      t.switchToBG();
+    }
+  else if(flgBG_w == false)
+    {
+      t.switchToEN();
+    }
+  t.exec();
+}
+
+void MainWindow::on_btnTasks_released()
+{
+  btnTasks_released();
+
+  openTasksWin();
+}
+
+void MainWindow::on_btnZoom_pressed()
+{
+  btnLrf_released();
+  btnMedia_released();
+  btnTasks_released();
+  btnMenu_released();
+  btnScreenshot_released();
+  btnExpand_released();
+  btnPantilt_up_released();
+  btnPantilt_down_released();
+  btnPantilt_left_released();
+  btnPantilt_right_released();
+
+  if(day_ir == false)
+    {
+      btnDayir_released();
+    }
+
+  if(pantilt_ == false)
+    {
+      btnPantilt_released();
+    }
+
+  if(ui->btnPolarity->isEnabled())
+    {
+      if(polarity_ == false)
+        {
+          btnPolarity_released();
+        }
+    }
+
+  if(ui->btnNuc->isEnabled())
+    {
+      btnNuc_released();
+    }
+
+  btnZoom_pressed();
+}
+
+void MainWindow::changeZoom()
+{
+  if(day_ir == true)
+    {
+      checkIrZoom();
+
+      ir_zoom = ui->btnZoom->text();
+    }
+  else if(day_ir == false)
+    {
+      checkDayZoom();
+
+      day_zoom = ui->btnZoom->text();
+    }
+}
+
+void MainWindow::on_btnZoom_released()
+{
+  btnZoom_released();
+
+  changeZoom();
+}
+
+void MainWindow::openMenuWin()
+{
+    Menu m;
+    m.setModal(true);
+    m.showFullScreen();
+    //m.show();
+    if(flgBG_w == true)
+    {
+      m.switchToBG();
+    }
+  else if(flgBG_w == false)
+    {
+      m.switchToEN();
+    }
+  m.exec();
+}
+
+void MainWindow::on_btnMenu_released()
+{
+  btnMenu_released();
+
+  openMenuWin();
+}
+
+void MainWindow::on_btnDayir_pressed()
+{
+  btnLrf_released();
+  btnMedia_released();
+  btnTasks_released();
+  btnZoom_released();
+  btnMenu_released();
+  btnScreenshot_released();
+  btnExpand_released();
+  btnPantilt_up_released();
+  btnPantilt_down_released();
+  btnPantilt_left_released();
+  btnPantilt_right_released();
+
+  if(pantilt_ == false)
+    {
+      btnPantilt_released();
+    }
+
+  if(ui->btnPolarity->isEnabled())
+    {
+      if(polarity_ == false)
+        {
+          btnPolarity_released();
+        }
+    }
+
+  if(ui->btnNuc->isEnabled())
+    {
+      btnNuc_released();
+    }
+
+  if(day_ir == false)
+    {
+      btnDayir_pressed();
+
+      //startProgram();
+
+      ui->btnNuc->setEnabled(true);
+      ui->btnNuc->setStyleSheet(
+            "border: 2px white; "
+            "border-radius: 10px;"
+            "padding: 0 8px;"
+            "background: white;"
+            "color: black;"
+            );
+
+      ui->btnPolarity->setEnabled(true);
+      ui->btnPolarity->setStyleSheet(
+            "border: 2px white; "
+            "border-radius: 10px;"
+            "padding: 0 8px;"
+            "background: white;"
+            "color: black;"
+            );
+      polarity_ = false;
+
+      ui->btnZoom->setText(ir_zoom);
+
+      if(flgBG_w == true)
+        {
+          switchToBG();
+          ui->btnDayir->setText(btnIrTxt_BG);
+        }
+      else if(flgBG_w == false)
+        {
+          switchToEN();
+          ui->btnDayir->setText(btnIrTxt_EN);
+        }
+
+
+        if(isCameraConnected==false)
+        {
+           //StartThermalCameraCapture();
+        }
+        if(DaycamDrawIsRunning()==true)
+        {
+            DaycamDrawStop();
+        }
+        if(ThermalIsRunning()==false)
+        {
+            ThermalDrawStart();
+        }
+
+        day_ir = true;
+    }
+  else if(day_ir == true)
+    {
+        btnDayir_released();
+        //stopProgram();
+
+        ui->btnNuc->setStyleSheet(
+            "border: 2px white; "
+            "border-radius: 10px;"
+            "padding: 0 8px;"
+            "background: white;"
+            "color: gray;"
+            );
+      ui->btnNuc->setEnabled(false);
+
+      ui->btnPolarity->setStyleSheet(
+            "border: 2px white; "
+            "border-radius: 10px;"
+            "padding: 0 8px;"
+            "background: white;"
+            "color: gray;"
+            );
+
+      if(polarity_ == true)
+        {
+          //ui->btnPolarity->setText(polarity_wh);
+          //hikVision->setPolarity(2);
+        }
+      ui->btnPolarity->setEnabled(false);
+
+      polarity_ = false;
+
+      ui->btnZoom->setText(day_zoom);
+
+      if(flgBG_w == true)
+        {
+          switchToBG();
+          ui->btnDayir->setText(btnDayTxt_BG);
+        }
+      else if(flgBG_w == false)
+        {
+          switchToEN();
+          ui->btnDayir->setText(btnDayTxt_EN);
+        }
+        if(LcaCameraIsStreaming()==false)
+        {
+            LcaStartCamera();
+        }
+        if(ThermalIsRunning()==true)
+        {
+            ThermalDrawStop();
+        }
+        if(DaycamDrawIsRunning()==false)
+        {
+            DaycamDrawStart();
+            StopThermalCameraCapture();
+        }
+        day_ir = false;
+    }
+}
+
+void MainWindow::on_btnTasks_pressed()
+{
+  btnLrf_released();
+  btnMedia_released();
+  btnZoom_released();
+  btnMenu_released();
+  btnScreenshot_released();
+  btnExpand_released();
+  btnPantilt_up_released();
+  btnPantilt_down_released();
+  btnPantilt_left_released();
+  btnPantilt_right_released();
+
+  if(day_ir == false)
+    {
+      btnDayir_released();
+    }
+
+  if(pantilt_ == false)
+    {
+      btnPantilt_released();
+    }
+
+  if(ui->btnPolarity->isEnabled())
+    {
+      if(polarity_ == false)
+        {
+          btnPolarity_released();
+        }
+    }
+
+  if(ui->btnNuc->isEnabled())
+    {
+      btnNuc_released();
+    }
+
+  btnTasks_pressed();
+}
+
+void MainWindow::on_btnMenu_pressed()
+{
+  btnLrf_released();
+  btnMedia_released();
+  btnTasks_released();
+  btnZoom_released();
+  btnScreenshot_released();
+  btnExpand_released();
+  btnPantilt_up_released();
+  btnPantilt_down_released();
+  btnPantilt_left_released();
+  btnPantilt_right_released();
+
+  if(day_ir == false)
+    {
+      btnDayir_released();
+    }
+
+  if(pantilt_ == false)
+    {
+      btnPantilt_released();
+    }
+
+  if(ui->btnPolarity->isEnabled())
+    {
+      if(polarity_ == false)
+        {
+          btnPolarity_released();
+        }
+    }
+
+  if(ui->btnNuc->isEnabled())
+    {
+      btnNuc_released();
+    }
+
+  btnMenu_pressed();
+}
+
+void MainWindow::openExpandedWin()
+{
+    Expanded ex;
+    ex.setModal(true);
+    ex.showFullScreen();
+    //ex.show();
+    ex.taskStyle();
+
+  if(flgBG_w == true)
+    {
+      ex.switchToBG();
+    }
+  else if(flgBG_w == false)
+    {
+      ex.switchToEN();
+    }
+
+  ex.exec();
+}
+
+void MainWindow::on_btnExpand_released()
+{
+  btnExpand_released();
+
+  if(day_ir == true)
+    {
+      ir_zoom = ui->btnZoom->text();
+    }
+  else if(day_ir == false)
+    {
+      day_zoom = ui->btnZoom->text();
+    }
+  openExpandedWin();
+}
+
+void MainWindow::on_btnNuc_pressed()
+{
+  btnLrf_released();
+  btnMedia_released();
+  btnTasks_released();
+  btnZoom_released();
+  btnMenu_released();
+  btnScreenshot_released();
+  btnExpand_released();
+  btnPantilt_up_released();
+  btnPantilt_down_released();
+  btnPantilt_left_released();
+  btnPantilt_right_released();
+
+  if(day_ir == false)
+    {
+      btnDayir_released();
+    }
+
+  if(pantilt_ == false)
+    {
+      btnPantilt_released();
+    }
+
+  if(ui->btnPolarity->isEnabled())
+    {
+      if(polarity_ == false)
+        {
+          btnPolarity_released();
+        }
+    }
+
+  btnNuc_pressed();
+
+  hikVision->doNuc();
+}
+
+void MainWindow::on_btnScreenshot_pressed()
+{
+  btnLrf_released();
+  btnMedia_released();
+  btnTasks_released();
+  btnZoom_released();
+  btnMenu_released();
+  btnExpand_released();
+  btnPantilt_up_released();
+  btnPantilt_down_released();
+  btnPantilt_left_released();
+  btnPantilt_right_released();
+
+  if(day_ir == false)
+    {
+      btnDayir_released();
+    }
+
+  if(pantilt_ == false)
+    {
+      btnPantilt_released();
+    }
+
+  if(ui->btnPolarity->isEnabled())
+    {
+      if(polarity_ == false)
+        {
+          btnPolarity_released();
+        }
+    }
+
+  if(ui->btnNuc->isEnabled())
+    {
+      btnNuc_released();
+    }
+
+  btnScreenshot_pressed();
+}
+
+void MainWindow::on_btnScreenshot_released()
+{
+  btnScreenshot_released();
+
+  makeScreenshot();
+}
+
+void MainWindow::on_btnPolarity_pressed()
+{
+  btnLrf_released();
+  btnMedia_released();
+  btnTasks_released();
+  btnZoom_released();
+  btnMenu_released();
+  btnScreenshot_released();
+  btnExpand_released();
+  btnPantilt_up_released();
+  btnPantilt_down_released();
+  btnPantilt_left_released();
+  btnPantilt_right_released();
+
+  if(day_ir == false)
+    {
+      btnDayir_released();
+    }
+
+  if(pantilt_ == false)
+    {
+      btnPantilt_released();
+    }
+
+  if(ui->btnNuc->isEnabled())
+    {
+      btnNuc_released();
+    }
+
+  if(polarity_ == false)
+    {
+      btnPolarity_pressed();
+      //hikVision->setPolarity(1);
+
+      if(flgBG_w == true)
+        {
+          //ui->btnPolarity->setText(btnPolarityBHTxt_BG);
+          ui->btnPolarity->setText(btnpPolarityTxt_BG);
+        }
+      else if(flgBG_w == false)
+        {
+          //ui->btnPolarity->setText(btnPolarityBHTxt_EN);
+          ui->btnPolarity->setText(btnpPolarityTxt_EN);
+        }
+
+      //polarity_bh = ui->btnPolarity->text();
+
+      polarity_ = true;
+    }
+  else if(polarity_ == true)
+    {
+      btnPolarity_released();
+
+      //hikVision->setPolarity(2);
+      if(flgBG_w == true)
+        {
+          //ui->btnPolarity->setText(btnPolarityWHTxt_BG);
+          ui->btnPolarity->setText(btnpPolarityTxt_BG);
+        }
+      else if(flgBG_w == false)
+        {
+          //ui->btnPolarity->setText(btnPolarityWHTxt_EN);
+          ui->btnPolarity->setText(btnpPolarityTxt_EN);
+        }
+
+      //polarity_wh = ui->btnPolarity->text();
+
+      polarity_ = false;
+    }
+}
+
+void MainWindow::on_btnNuc_released()
+{
+  btnNuc_released();
+}
+
+void MainWindow::on_btnPantilt_pressed()
+{
+  btnLrf_released();
+  btnMedia_released();
+  btnTasks_released();
+  btnZoom_released();
+  btnMenu_released();
+  btnScreenshot_released();
+  btnExpand_released();
+  btnPantilt_up_released();
+  btnPantilt_down_released();
+  btnPantilt_left_released();
+  btnPantilt_right_released();
+
+  if(day_ir == false)
+    {
+      btnDayir_released();
+    }
+
+  if(ui->btnPolarity->isEnabled())
+    {
+      if(polarity_ == false)
+        {
+          btnPolarity_released();
+        }
+    }
+
+  if(ui->btnNuc->isEnabled())
+    {
+      btnNuc_released();
+    }
+
+  if(pantilt_ == false)
+    {
+      btnPantilt_pressed();
+
+      showPanTilt();
+
+      pantilt_ = true;
+    }
+  else if(pantilt_ == true)
+    {
+      btnPantilt_released();
+
+      hidePanTilt();
+
+      pantilt_ = false;
+    }
+}
+
+static int mainWinTiltSpeed = 0;
+static int mainWinPanSpeed = 0;
+
+int MainWinPanSpeedCallback()
+{
+    return mainWinPanSpeed;
+}
+
+int MainWinTiltSpeedCallback()
+{
+    return mainWinTiltSpeed;
+}
+
+void MainWindow::on_btnPantilt_up_pressed()
+{
+  mainWinTiltSpeed = -10000;
+
+  btnLrf_released();
+  btnMedia_released();
+  btnTasks_released();
+  btnZoom_released();
+  btnMenu_released();
+  btnScreenshot_released();
+  btnExpand_released();
+  btnPantilt_down_released();
+  btnPantilt_left_released();
+  btnPantilt_right_released();
+
+  if(day_ir == false)
+    {
+      btnDayir_released();
+    }
+
+  if(pantilt_ == false)
+    {
+      btnPantilt_released();
+    }
+
+  if(ui->btnPolarity->isEnabled())
+    {
+      if(polarity_ == false)
+        {
+          btnPolarity_released();
+        }
+    }
+
+  if(ui->btnNuc->isEnabled())
+    {
+      btnNuc_released();
+    }
+
+  btnPantilt_up_pressed();
+
+
+}
+
+void MainWindow::on_btnPantilt_up_released()
+{
+    mainWinTiltSpeed = 0;
+  btnPantilt_up_released();
+}
+
+void MainWindow::on_btnPantilt_down_pressed()
+{
+    mainWinTiltSpeed = 10000;
+  btnLrf_released();
+  btnMedia_released();
+  btnTasks_released();
+  btnZoom_released();
+  btnMenu_released();
+  btnScreenshot_released();
+  btnExpand_released();
+  btnPantilt_up_released();
+  btnPantilt_left_released();
+  btnPantilt_right_released();
+
+  if(day_ir == false)
+    {
+      btnDayir_released();
+    }
+
+  if(pantilt_ == false)
+    {
+      btnPantilt_released();
+    }
+
+  if(ui->btnPolarity->isEnabled())
+    {
+      if(polarity_ == false)
+        {
+          btnPolarity_released();
+        }
+    }
+
+  if(ui->btnNuc->isEnabled())
+    {
+      btnNuc_released();
+    }
+
+  btnPantilt_down_pressed();
+}
+
+void MainWindow::on_btnPantilt_down_released()
+{
+    mainWinTiltSpeed = 0;
+  btnPantilt_down_released();
+}
+
+void MainWindow::on_btnPantilt_left_pressed()
+{
+    mainWinPanSpeed = -10000;
+  btnLrf_released();
+  btnMedia_released();
+  btnTasks_released();
+  btnZoom_released();
+  btnMenu_released();
+  btnScreenshot_released();
+  btnExpand_released();
+  btnPantilt_up_released();
+  btnPantilt_down_released();
+  btnPantilt_right_released();
+
+  if(day_ir == false)
+    {
+      btnDayir_released();
+    }
+
+  if(pantilt_ == false)
+    {
+      btnPantilt_released();
+    }
+
+  if(ui->btnPolarity->isEnabled())
+    {
+      if(polarity_ == false)
+        {
+          btnPolarity_released();
+        }
+    }
+
+  if(ui->btnNuc->isEnabled())
+    {
+      btnNuc_released();
+    }
+
+  btnPantilt_left_pressed();
+}
+
+void MainWindow::on_btnPantilt_left_released()
+{
+    mainWinPanSpeed = 0;
+  btnPantilt_left_released();
+}
+
+void MainWindow::on_btnPantilt_right_pressed()
+{
+    mainWinPanSpeed = 10000;
+  btnLrf_released();
+  btnMedia_released();
+  btnTasks_released();
+  btnZoom_released();
+  btnMenu_released();
+  btnScreenshot_released();
+  btnExpand_released();
+  btnPantilt_up_released();
+  btnPantilt_down_released();
+  btnPantilt_left_released();
+
+  if(day_ir == false)
+    {
+      btnDayir_released();
+    }
+
+  if(pantilt_ == false)
+    {
+      btnPantilt_released();
+    }
+
+  if(ui->btnPolarity->isEnabled())
+    {
+      if(polarity_ == false)
+        {
+          btnPolarity_released();
+        }
+    }
+
+  if(ui->btnNuc->isEnabled())
+    {
+      btnNuc_released();
+    }
+
+  btnPantilt_right_pressed();
+}
+
+void MainWindow::on_btnPantilt_right_released()
+{
+    mainWinPanSpeed = 0;
+  btnPantilt_right_released();
+}
+
+void MainWindow::on_btnLRF_pressed()
+{
+  btnMedia_released();
+  btnTasks_released();
+  btnZoom_released();
+  btnMenu_released();
+  btnScreenshot_released();
+  btnExpand_released();
+  btnPantilt_up_released();
+  btnPantilt_down_released();
+  btnPantilt_left_released();
+  btnPantilt_right_released();
+
+  if(day_ir == false)
+    {
+      btnDayir_released();
+    }
+
+  if(pantilt_ == false)
+    {
+      btnPantilt_released();
+    }
+
+  if(ui->btnPolarity->isEnabled())
+    {
+      if(polarity_ == false)
+        {
+          btnPolarity_released();
+        }
+    }
+
+  if(ui->btnNuc->isEnabled())
+    {
+      btnNuc_released();
+    }
+
+  btnLrf_pressed();
+}
+
+void MainWindow::on_btnLRF_released()
+{
+  btnLrf_released();
+
+  if(active == true)
+  {
+      ResultSelection resultSelection;
+
+      resultSelection.setModal(true);
+      if(flgBG_w == true)
+        {
+          resultSelection.switchToBG();
+        }
+      else if(flgBG_w == false)
+        {
+          resultSelection.switchToEN();
+        }
+      resultSelection.exec();
+  }
+  else if(active == false)
+  {
+
+  }
+}
+
+void MainWindow::gpioBtnOk()
+{
+  if(ui->btnLRF->hasFocus())
+    {
+
+    }
+  else if(ui->btnDayir->hasFocus())
+    {
+      on_btnDayir_pressed();
+      btnDayir_selected();
+    }
+  else if(ui->btnPantilt->hasFocus())
+    {
+      on_btnPantilt_pressed();
+      btnPantilt_selected();
+    }
+  else if(ui->btnMedia->hasFocus())
+    {
+      on_btnMedia_pressed();
+      btnMedia_selected();
+      openMediaBrowser();
+    }
+  else if(ui->btnTasks->hasFocus())
+    {
+      on_btnTasks_pressed();
+      btnTasks_selected();
+      openTasksWin();
+    }
+  else if(ui->btnNuc->hasFocus())
+    {
+      on_btnNuc_pressed();
+      btnNuc_selected();
+    }
+  else if(ui->btnZoom->hasFocus())
+    {
+      on_btnZoom_pressed();
+      btnZoom_selected();
+      changeZoom();
+    }
+  else if(ui->btnPolarity->hasFocus())
+    {
+      on_btnPolarity_pressed();
+      btnPolarity_selected();
+    }
+  else if(ui->btnMenu->hasFocus())
+    {
+      on_btnMenu_pressed();
+      btnMenu_selected();
+      openMenuWin();
+    }
+  else if(ui->btnScreenshot->hasFocus())
+    {
+      on_btnScreenshot_pressed();
+      btnScreenshot_selected();
+      makeScreenshot();
+    }
+  else if(ui->btnExpand->hasFocus())
+    {
+      on_btnExpand_pressed();
+      btnExpand_selected();
+      openExpandedWin();
+    }
+  else if(ui->btnPantilt_up->hasFocus())
+    {
+      on_btnPantilt_up_pressed();
+      btnPantilt_up_selected();
+    }
+  else if(ui->btnPantilt_down->hasFocus())
+    {
+      on_btnPantilt_down_pressed();
+      btnPantilt_down_selected();
+    }
+  else if(ui->btnPantilt_left->hasFocus())
+    {
+      on_btnPantilt_left_pressed();
+      btnPantilt_left_selected();
+    }
+  else if(ui->btnPantilt_right->hasFocus())
+    {
+      on_btnPantilt_right_pressed();
+      btnPantilt_right_selected();
+    }
+}
+
+void MainWindow::gpioBtnLeft()
+{
+  if(ui->btnNuc->hasFocus())
+    {
+      btnNuc_released();
+      if(pantilt_ == true)
+        {
+          ui->btnPantilt_right->setFocus();
+          btnPantilt_right_selected();
+        }
+      else
+        {
+          ui->btnLRF->setFocus();
+          btnLrf_selected();
+        }
+    }
+  else if(ui->btnZoom->hasFocus())
+    {
+      btnZoom_released();
+      if(pantilt_ == true)
+        {
+          ui->btnPantilt_right->setFocus();
+          btnPantilt_right_selected();
+        }
+      else
+        {
+          ui->btnDayir->setFocus();
+          btnDayir_selected();
+        }
+    }
+  else if(ui->btnPolarity->hasFocus())
+    {
+      if(polarity_ == true)
+        {
+          btnPolarity_pressed();
+          if(pantilt_ == true)
+            {
+              ui->btnPantilt_right->setFocus();
+              btnPantilt_right_selected();
+            }
+          else
+            {
+              ui->btnPantilt->setFocus();
+              btnPantilt_selected();
+            }
+        }
+      else
+        {
+          btnPolarity_released();
+          if(pantilt_ == true)
+            {
+              ui->btnPantilt_right->setFocus();
+              btnPantilt_right_selected();
+            }
+          else
+            {
+              ui->btnPantilt->setFocus();
+              btnPantilt_selected();
+            }
+        }
+    }
+  else if(ui->btnMenu->hasFocus())
+    {
+      btnMenu_released();
+      if(pantilt_ == true)
+        {
+          ui->btnPantilt_right->setFocus();
+          btnPantilt_right_selected();
+        }
+      else
+        {
+          ui->btnMedia->setFocus();
+          btnMedia_selected();
+        }
+    }
+  else if(ui->btnScreenshot->hasFocus())
+    {
+      btnScreenshot_released();
+      //if(pantilt_ == true)
+      //{
+      //    ui->btnPantilt_right->setFocus();
+      //    btnPantilt_right_pressed();
+      //}
+      //else
+      //{
+      ui->btnExpand->setFocus();
+      btnExpand_selected();
+      //}
+    }
+  else if(ui->btnExpand->hasFocus())
+    {
+      btnExpand_released();
+      if(pantilt_ == true)
+        {
+          ui->btnPantilt_right->setFocus();
+          btnPantilt_right_selected();
+        }
+      else
+        {
+          ui->btnTasks->setFocus();
+          btnTasks_selected();
+        }
+    }
+  else if(ui->btnPantilt_right->hasFocus())
+    {
+      btnPantilt_right_released();
+      ui->btnPantilt_up->setFocus();
+      btnPantilt_up_selected();
+    }
+  else if(ui->btnPantilt_up->hasFocus())
+    {
+      btnPantilt_up_released();
+      ui->btnPantilt_left->setFocus();
+      btnPantilt_left_selected();
+    }
+  else if(ui->btnPantilt_left->hasFocus())
+    {
+      btnPantilt_left_released();
+      ui->btnLRF->setFocus();
+      btnLrf_selected();
+    }
+  else if(ui->btnPantilt_down->hasFocus())
+    {
+      btnPantilt_down_released();
+      ui->btnPantilt_left->setFocus();
+      btnPantilt_left_selected();
+    }
+}
+
+void MainWindow::gpioBtnRight()
+{
+  if(ui->btnLRF->hasFocus())
+    {
+      if(pantilt_ == true)
+        {
+          btnLrf_released();
+          ui->btnPantilt_left->setFocus();
+          btnPantilt_left_selected();
+        }
+      else
+        {
+          btnLrf_released();
+          if(ui->btnNuc->isEnabled())
+            {
+              ui->btnNuc->setFocus();
+              btnNuc_selected();
+            }
+          else
+            {
+              ui->btnZoom->setFocus();
+              btnZoom_selected();
+            }
+        }
+    }
+  else if(ui->btnDayir->hasFocus())
+    {
+      if(day_ir == true)
+        {
+          btnDayir_pressed();
+          if(pantilt_ == true)
+            {
+              ui->btnPantilt_left->setFocus();
+              btnPantilt_left_selected();
+            }
+          else
+            {
+              ui->btnZoom->setFocus();
+              btnZoom_selected();
+            }
+        }
+      else
+        {
+          btnDayir_released();
+          if(pantilt_ == true)
+            {
+              ui->btnPantilt_left->setFocus();
+              btnPantilt_left_selected();
+            }
+          else
+            {
+              ui->btnZoom->setFocus();
+              btnZoom_selected();
+            }
+        }
+    }
+  else if(ui->btnPantilt->hasFocus())
+    {
+      if(pantilt_ == true)
+        {
+          btnPantilt_pressed();
+          ui->btnPantilt_left->setFocus();
+          btnPantilt_left_selected();
+        }
+      else
+        {
+          btnPantilt_released();
+
+          if(ui->btnPolarity->isEnabled())
+            {
+              ui->btnPolarity->setFocus();
+              btnPolarity_selected();
+            }
+          else
+            {
+              ui->btnMenu->setFocus();
+              btnMenu_selected();
+            }
+        }
+    }
+  else if(ui->btnMedia->hasFocus())
+    {
+      btnMedia_released();
+      if(pantilt_ == true)
+        {
+          ui->btnPantilt_left->setFocus();
+          btnPantilt_left_selected();
+        }
+      else
+        {
+          ui->btnMenu->setFocus();
+          btnMenu_selected();
+        }
+    }
+  else if(ui->btnTasks->hasFocus())
+    {
+      btnTasks_released();
+      if(pantilt_ == true)
+        {
+          ui->btnPantilt_left->setFocus();
+          btnPantilt_left_selected();
+        }
+      else
+        {
+          ui->btnExpand->setFocus();
+          btnExpand_selected();
+        }
+    }
+  else if(ui->btnExpand->hasFocus())
+    {
+      btnExpand_released();
+      ui->btnScreenshot->setFocus();
+      btnScreenshot_selected();
+    }
+  else if(ui->btnPantilt_left->hasFocus())
+    {
+      btnPantilt_left_released();
+      ui->btnPantilt_up->setFocus();
+      btnPantilt_up_selected();
+    }
+  else if(ui->btnPantilt_up->hasFocus())
+    {
+      btnPantilt_up_released();
+      ui->btnPantilt_right->setFocus();
+      btnPantilt_right_selected();
+    }
+  else if(ui->btnPantilt_right->hasFocus())
+    {
+      btnPantilt_right_released();
+      ui->btnExpand->setFocus();
+      btnExpand_selected();
+    }
+  else if(ui->btnPantilt_down->hasFocus())
+    {
+      btnPantilt_down_released();
+      ui->btnPantilt_right->setFocus();
+      btnPantilt_right_selected();
+    }
+}
+
+void MainWindow::gpioBtnUp()
+{
+  if(ui->btnTasks->hasFocus())
+    {
+      btnTasks_released();
+      ui->btnMedia->setFocus();
+      btnMedia_selected();
+    }
+  else if(ui->btnMedia->hasFocus())
+    {
+      btnMedia_released();
+      ui->btnPantilt->setFocus();
+      btnPantilt_selected();
+    }
+  else if(ui->btnPantilt->hasFocus())
+    {
+      if(pantilt_ == true)
+        {
+          btnPantilt_pressed();
+          ui->btnDayir->setFocus();
+          btnDayir_selected();
+        }
+      else
+        {
+          btnPantilt_released();
+          ui->btnDayir->setFocus();
+          btnDayir_selected();
+        }
+    }
+  else if(ui->btnDayir->hasFocus())
+    {
+      if(day_ir == true)
+        {
+          btnDayir_pressed();
+          ui->btnLRF->setFocus();
+          btnLrf_selected();
+        }
+      else
+        {
+          btnDayir_released();
+          ui->btnLRF->setFocus();
+          btnLrf_selected();
+        }
+    }
+  else if(ui->btnScreenshot->hasFocus())
+    {
+      btnScreenshot_released();
+      ui->btnMenu->setFocus();
+      btnMenu_selected();
+    }
+  else if(ui->btnMenu->hasFocus())
+    {
+      btnMenu_released();
+      if(ui->btnPolarity->isEnabled())
+        {
+          ui->btnPolarity->setFocus();
+          btnPolarity_selected();
+        }
+      else
+        {
+          ui->btnZoom->setFocus();
+          btnZoom_selected();
+        }
+    }
+  else if(ui->btnPolarity->hasFocus())
+    {
+      if(polarity_ == true)
+        {
+          btnPolarity_pressed();
+          ui->btnZoom->setFocus();
+          btnZoom_selected();
+        }
+      else
+        {
+          btnPolarity_released();
+          ui->btnZoom->setFocus();
+          btnZoom_selected();
+        }
+    }
+  else if(ui->btnZoom->hasFocus())
+    {
+      if(ui->btnNuc->isEnabled())
+        {
+          btnZoom_released();
+          ui->btnNuc->setFocus();
+          btnNuc_selected();
+        }
+    }
+  else if(ui->btnPantilt_left->hasFocus())
+    {
+      btnPantilt_left_released();
+      ui->btnPantilt_up->setFocus();
+      btnPantilt_up_selected();
+    }
+  else if(ui->btnPantilt_down->hasFocus())
+    {
+      btnPantilt_down_released();
+      ui->btnPantilt_left->setFocus();
+      btnPantilt_left_selected();
+    }
+  else if(ui->btnPantilt_right->hasFocus())
+    {
+      btnPantilt_right_released();
+      ui->btnPantilt_up->setFocus();
+      btnPantilt_up_selected();
+    }
+}
+
+void MainWindow::gpioBtnDown()
+{
+  if(ui->btnLRF->hasFocus())
+    {
+      btnLrf_released();
+      ui->btnDayir->setFocus();
+      btnDayir_selected();
+    }
+  else if(ui->btnDayir->hasFocus())
+    {
+      if(day_ir == true)
+        {
+          btnDayir_pressed();
+          ui->btnPantilt->setFocus();
+          btnPantilt_selected();
+        }
+      else
+        {
+          btnDayir_released();
+          ui->btnPantilt->setFocus();
+          btnPantilt_selected();
+        }
+    }
+  else if(ui->btnPantilt->hasFocus())
+    {
+      if(pantilt_ == true)
+        {
+          btnPantilt_pressed();
+          ui->btnMedia->setFocus();
+          btnMedia_selected();
+        }
+      else
+        {
+          btnPantilt_released();
+          ui->btnMedia->setFocus();
+          btnMedia_selected();
+        }
+    }
+  else if(ui->btnMedia->hasFocus())
+    {
+      btnMedia_released();
+      ui->btnTasks->setFocus();
+      btnTasks_selected();
+    }
+  else if(ui->btnNuc->hasFocus())
+    {
+      btnNuc_released();
+      ui->btnZoom->setFocus();
+      btnZoom_selected();
+    }
+  else if(ui->btnZoom->hasFocus())
+    {
+      btnZoom_released();
+      if(ui->btnPolarity->isEnabled())
+        {
+          ui->btnPolarity->setFocus();
+          btnPolarity_selected();
+        }
+      else
+        {
+          ui->btnMenu->setFocus();
+          btnMenu_selected();
+        }
+    }
+  else if(ui->btnPolarity->hasFocus())
+    {
+      if(polarity_ == true)
+        {
+          btnPolarity_pressed();
+          ui->btnMenu->setFocus();
+          btnMenu_selected();
+        }
+      else
+        {
+          btnPolarity_released();
+          ui->btnMenu->setFocus();
+          btnMenu_selected();
+        }
+    }
+  else if(ui->btnMenu->hasFocus())
+    {
+      btnMenu_released();
+      ui->btnScreenshot->setFocus();
+      btnScreenshot_selected();
+    }
+  else if(ui->btnPantilt_up->hasFocus())
+    {
+      btnPantilt_up_released();
+      ui->btnPantilt_left->setFocus();
+      btnPantilt_left_selected();
+    }
+  else if(ui->btnPantilt_left->hasFocus())
+    {
+      btnPantilt_left_released();
+      ui->btnPantilt_down->setFocus();
+      btnPantilt_down_selected();
+    }
+  else if(ui->btnPantilt_right->hasFocus())
+    {
+      btnPantilt_right_released();
+      ui->btnPantilt_down->setFocus();
+      btnPantilt_down_selected();
+    }
+}
+
+void MainWindow::checkIrZoom()
+{
+  if(ui->btnZoom->text() == "1X")
+    {
+      hikVision->makeZoom(2);
+      ui->btnZoom->setText("2X");
+    }
+  else if(ui->btnZoom->text() == "2X")
+    {
+      hikVision->makeZoom(3);
+      ui->btnZoom->setText("4X");
+    }
+  else if (ui->btnZoom->text() == "4X")
+    {
+      hikVision->makeZoom(4);
+      ui->btnZoom->setText("8X");
+    }
+  else if (ui->btnZoom->text() == "8X")
+    {
+      hikVision->makeZoom(1);
+      ui->btnZoom->setText("1X");
+    }
+}
+
+void MainWindow::checkDayZoom()
+{
+  if(ui->btnZoom->text() == "1X")
+    {
+      SetZoomDayCam(5);
+      ui->btnZoom->setText("5X");
+    }
+  else if(ui->btnZoom->text() == "5X")
+    {
+      SetZoomDayCam(10);
+      ui->btnZoom->setText("10X");
+    }
+  else if (ui->btnZoom->text() == "10X")
+    {
+      SetZoomDayCam(15);
+      ui->btnZoom->setText("15X");
+    }
+  else if (ui->btnZoom->text() == "15X")
+    {
+      SetZoomDayCam(20);
+      ui->btnZoom->setText("20X");
+    }
+  else if (ui->btnZoom->text() == "20X")
+    {
+      SetZoomDayCam(1);
+      ui->btnZoom->setText("1X");
+    }
+}
+
+void MainWindow::on_btnActive_pressed()
+{
+    if(active == false)
+    {
+        ui->btnActive->setStyleSheet(
+               "background:green;"
+               "border-radius: 45px;");
+
+        active = true;
+    }
+    else if(active == true)
+    {
+        ui->btnActive->setStyleSheet(
+               "background:red;"
+               "border-radius: 45px;");
+
+        active = false;
+    }
+}
+

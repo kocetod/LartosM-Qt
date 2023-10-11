@@ -1,0 +1,41 @@
+#ifndef POINTOBJ_H
+#define POINTOBJ_H
+
+#include <QObject>
+#include <QString>
+
+class LartosPointObj
+{
+public:
+  LartosPointObj();
+  ~LartosPointObj();
+
+  void setLartosPointIndex(QString index);
+
+  void setLartosPointName(QString name);
+
+  void setLartosPointLattitude(QString lat);
+
+  void setLartosPointLongitude(QString lng);
+
+  void setLartosPointAltitude(QString alt);
+
+  QString getLartosPointIndex();
+
+  QString getLartosPointName();
+
+  QString getLartosPointLattitude();
+
+  QString getLartosPointLongitude();
+
+  QString getLartosPointAltitude();
+
+private:
+  QString pointName;
+  QString pointIndex;
+  QString pointLat;
+  QString pointLng;
+  QString pointAlt;
+};
+
+#endif // POINTOBJ_H

@@ -1,0 +1,71 @@
+#ifndef SAVEUSERDATA_H
+#define SAVEUSERDATA_H
+
+#include <QDateTime>
+#include <QJsonObject>
+#include <QJsonDocument>
+#include <QDebug>
+#include <QDir>
+#include <QFile>
+#include <QIODevice>
+#include <istream>
+
+extern QString userPasswordParameter;
+extern QString maintenancePasswordParameter;
+extern QString brightnessValueParameter;
+extern QString contrastValueParameter;
+extern QString deeValueParameter;
+extern QString deeModeParameter;
+extern QString reticleXaxisPositionParameter;
+extern QString reticleYaxisPositionParameter;
+extern QString coordinateSystemParameter;
+extern QString dateAndTime;
+extern QString panSpeedFactorParameter;
+extern QString tiltSpeedFactorParameter;
+extern QString coordinateTypeParameter;
+
+class SaveLartosUserData
+{
+private:
+  void jsonFormater(QJsonObject jsonObjectValue);
+
+  void saveJsonFile(QJsonDocument jsonDocumentValue);
+
+  void readJsonFromFile();
+
+  QJsonObject obj;
+
+  QJsonDocument userParameters;
+
+public:
+  SaveLartosUserData();
+  ~SaveLartosUserData();
+
+  void setUserPasswordParameter(QString value);
+
+  void setMaintenancePasswordParameter(QString value);
+
+  void setBrightnessValueParameter(int value);
+
+  void setContrastValueParameter(int value);
+
+  void setDeeValueParameter(int value);
+
+  void setDeeModeParameter(bool flag);
+
+  void setReticlePositionXaxisParameter(int value);
+
+  void setReticlePositionYasisParameter(int value);
+
+  void setCoordinateSystemParameter(QString byte);
+
+  void setDateTimeParameter(QDateTime value);
+
+  void setPanSpeedParameter(long value);
+
+  void setTiltSpeedParameter(long value);
+
+  void setCoordinateTypeParameter(QString value);
+};
+
+#endif //SAVEUSERDATA_H

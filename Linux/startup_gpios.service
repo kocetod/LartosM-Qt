@@ -1,0 +1,11 @@
+[Unit]
+Description=<LartosMG service for startup>
+
+[Service]
+#User=<user e.g. root>
+#WorkingDirectory=<directory_of_script e.g. /root>
+ExecStart=/home/pi/GpioUdpSock.sh
+#Restart=always
+
+[Install]
+WantedBy=multi-user.target

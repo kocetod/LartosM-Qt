@@ -1,0 +1,23 @@
+{
+"ThisDeviceType": 1,
+"HeadDeviceIp": [10,10,5,6],
+"ControllerDeviceIp": [10,10,5,7],
+"PtuIp": [10,10,5,61],
+"PtuPort":3001,
+"PTUDeviceId":1,
+"LucidCameraIp": [10,10,5,11],
+"RangefinderPointerTurnOn": 1,
+"ADCBatteryMin":345,
+"ADCBatteryMax":426,
+"LucidCameraResX":800,
+"LucidCameraResY":600,
+"LucidCameraOffsetX":0,
+"LucidCameraOffsetY":0,
+"LucidStreamMaxNumResendRequestsPerImage":10000,
+"LucidGevSCPD":80000,
+"LucidImageTimeout":40,
+"LucidSystemTimeout":1000,
+"SkipCalibration":1,
+"ShowDiagnosticBars":1,
+
+}

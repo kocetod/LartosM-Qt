@@ -1,0 +1,45 @@
+<RCC>
+    <qresource prefix="/new/prefix1">
+        <file>icons/back.png</file>
+        <file>icons/bg.png</file>
+        <file>icons/en.jpg</file>
+        <file>icons/expand_.png</file>
+        <file>icons/expand.png</file>
+        <file>icons/reticle.png</file>
+        <file>icons/down.png</file>
+        <file>icons/left.png</file>
+        <file>icons/right.png</file>
+        <file>icons/up.png</file>
+        <file>icons/_hide.png</file>
+        <file>icons/info.png</file>
+        <file>icons/1A.png</file>
+        <file>icons/1B.png</file>
+        <file>icons/1C.png</file>
+        <file>icons/2.png</file>
+        <file>icons/3.png</file>
+        <file>icons/oeg.png</file>
+        <file>icons/zoom1.png</file>
+        <file>icons/zoom2.png</file>
+        <file>icons/zoom4.png</file>
+        <file>icons/zoom5.png</file>
+        <file>icons/zoom8.png</file>
+        <file>icons/zoom10.png</file>
+        <file>icons/zoom15.png</file>
+        <file>icons/zoom20.png</file>
+        <file>icons/menu.png</file>
+        <file>icons/palette.png</file>
+        <file>icons/scr.png</file>
+        <file>icons/shutter_closed.png</file>
+        <file>icons/shutter_open.png</file>
+        <file>icons/tasks.png</file>
+        <file>icons/media.png</file>
+        <file>icons/day.png</file>
+        <file>icons/lrf.png</file>
+        <file>icons/thermal.png</file>
+        <file>icons/pantilt_.png</file>
+        <file>icons/onoff.png</file>
+        <file>icons/bright_scr.png</file>
+        <file>icons/loading.gif</file>
+        <file>icons/zoom16.png</file>
+    </qresource>
+</RCC>

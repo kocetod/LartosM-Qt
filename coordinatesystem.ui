@@ -1,0 +1,450 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>CoordinateSystem</class>
+ <widget class="QDialog" name="CoordinateSystem">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>1280</width>
+    <height>800</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Dialog</string>
+  </property>
+  <property name="styleSheet">
+   <string notr="true">background:black;</string>
+  </property>
+  <widget class="QPushButton" name="btnChooseCoordSys">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>700</y>
+     <width>1281</width>
+     <height>101</height>
+    </rect>
+   </property>
+   <property name="font">
+    <font>
+     <family>Ubuntu</family>
+     <pointsize>60</pointsize>
+     <weight>50</weight>
+     <bold>false</bold>
+    </font>
+   </property>
+   <property name="focusPolicy">
+    <enum>Qt::ClickFocus</enum>
+   </property>
+   <property name="styleSheet">
+    <string notr="true">border: 2px white;
+padding: 0 8px;
+background: white;
+color: black;</string>
+   </property>
+   <property name="text">
+    <string>Choose</string>
+   </property>
+  </widget>
+  <widget class="QFrame" name="frame_system">
+   <property name="geometry">
+    <rect>
+     <x>10</x>
+     <y>20</y>
+     <width>1261</width>
+     <height>221</height>
+    </rect>
+   </property>
+   <property name="frameShape">
+    <enum>QFrame::StyledPanel</enum>
+   </property>
+   <property name="frameShadow">
+    <enum>QFrame::Raised</enum>
+   </property>
+   <widget class="QRadioButton" name="krasovsky">
+    <property name="geometry">
+     <rect>
+      <x>720</x>
+      <y>80</y>
+      <width>331</width>
+      <height>131</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <family>Ubuntu</family>
+      <pointsize>44</pointsize>
+     </font>
+    </property>
+    <property name="focusPolicy">
+     <enum>Qt::ClickFocus</enum>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">QRadioButton::indicator:unchecked{
+background:white;
+border: 1px solid;
+border-color: white;
+width: 33px;
+height: 33px;
+border-radius: 17px;
+}
+QRadioButton::indicator:checked{
+background:black;
+border: 7px solid;
+border-color: white;
+width: 21px;
+height: 21px;
+border-radius: 17px;
+}
+QRadioButton{
+color:white;
+}</string>
+    </property>
+    <property name="text">
+     <string> Krasovsky
+ (1942/83)</string>
+    </property>
+   </widget>
+   <widget class="QRadioButton" name="wgs">
+    <property name="geometry">
+     <rect>
+      <x>230</x>
+      <y>80</y>
+      <width>281</width>
+      <height>131</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <family>Ubuntu</family>
+      <pointsize>44</pointsize>
+     </font>
+    </property>
+    <property name="focusPolicy">
+     <enum>Qt::ClickFocus</enum>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">QRadioButton::indicator:unchecked{
+background:white;
+border: 1px solid;
+border-color: white;
+width: 33px;
+height: 33px;
+border-radius: 17px;
+}
+QRadioButton::indicator:checked{
+background:black;
+border: 7px solid;
+border-color: white;
+width: 21px;
+height: 21px;
+border-radius: 17px;
+}
+QRadioButton{
+color:white;
+}</string>
+    </property>
+    <property name="text">
+     <string>  NATO
+(WGS84)</string>
+    </property>
+    <property name="checked">
+     <bool>true</bool>
+    </property>
+   </widget>
+   <widget class="QLabel" name="lblChoose">
+    <property name="geometry">
+     <rect>
+      <x>0</x>
+      <y>-10</y>
+      <width>871</width>
+      <height>81</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <family>Ubuntu</family>
+      <pointsize>55</pointsize>
+      <weight>50</weight>
+      <bold>false</bold>
+     </font>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">color: white;</string>
+    </property>
+    <property name="text">
+     <string>Choose coordinate system</string>
+    </property>
+   </widget>
+  </widget>
+  <widget class="QFrame" name="frame_type">
+   <property name="geometry">
+    <rect>
+     <x>10</x>
+     <y>250</y>
+     <width>1261</width>
+     <height>181</height>
+    </rect>
+   </property>
+   <property name="frameShape">
+    <enum>QFrame::StyledPanel</enum>
+   </property>
+   <property name="frameShadow">
+    <enum>QFrame::Raised</enum>
+   </property>
+   <widget class="QLabel" name="lblChooseType">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>0</y>
+      <width>791</width>
+      <height>91</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <family>Ubuntu</family>
+      <pointsize>55</pointsize>
+      <weight>50</weight>
+      <bold>false</bold>
+     </font>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">color: white;</string>
+    </property>
+    <property name="text">
+     <string>Choose coordinate type</string>
+    </property>
+   </widget>
+   <widget class="QRadioButton" name="utm_xy">
+    <property name="geometry">
+     <rect>
+      <x>450</x>
+      <y>100</y>
+      <width>171</width>
+      <height>81</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <family>Ubuntu</family>
+      <pointsize>44</pointsize>
+     </font>
+    </property>
+    <property name="focusPolicy">
+     <enum>Qt::ClickFocus</enum>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">QRadioButton::indicator:unchecked{
+background:white;
+border: 1px solid;
+border-color: white;
+width: 33px;
+height: 33px;
+border-radius: 17px;
+}
+QRadioButton::indicator:checked{
+background:black;
+border: 7px solid;
+border-color: white;
+width: 21px;
+height: 21px;
+border-radius: 17px;
+}
+QRadioButton{
+color:white;
+}</string>
+    </property>
+    <property name="text">
+     <string>UTM</string>
+    </property>
+    <property name="checked">
+     <bool>false</bool>
+    </property>
+   </widget>
+   <widget class="QRadioButton" name="bl">
+    <property name="geometry">
+     <rect>
+      <x>690</x>
+      <y>100</y>
+      <width>161</width>
+      <height>81</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <family>Ubuntu</family>
+      <pointsize>44</pointsize>
+     </font>
+    </property>
+    <property name="focusPolicy">
+     <enum>Qt::ClickFocus</enum>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">QRadioButton::indicator:unchecked{
+background:white;
+border: 1px solid;
+border-color: white;
+width: 33px;
+height: 33px;
+border-radius: 17px;
+}
+QRadioButton::indicator:checked{
+background:black;
+border: 7px solid;
+border-color: white;
+width: 21px;
+height: 21px;
+border-radius: 17px;
+}
+QRadioButton{
+color:white;
+}</string>
+    </property>
+    <property name="text">
+     <string>B,L</string>
+    </property>
+    <property name="checked">
+     <bool>true</bool>
+    </property>
+   </widget>
+   <zorder>utm_xy</zorder>
+   <zorder>bl</zorder>
+   <zorder>lblChooseType</zorder>
+  </widget>
+  <widget class="QFrame" name="frame_zone">
+   <property name="geometry">
+    <rect>
+     <x>10</x>
+     <y>440</y>
+     <width>1261</width>
+     <height>191</height>
+    </rect>
+   </property>
+   <property name="frameShape">
+    <enum>QFrame::StyledPanel</enum>
+   </property>
+   <property name="frameShadow">
+    <enum>QFrame::Raised</enum>
+   </property>
+   <widget class="QRadioButton" name="zone_35">
+    <property name="geometry">
+     <rect>
+      <x>480</x>
+      <y>110</y>
+      <width>131</width>
+      <height>81</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <family>Ubuntu</family>
+      <pointsize>44</pointsize>
+     </font>
+    </property>
+    <property name="focusPolicy">
+     <enum>Qt::ClickFocus</enum>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">QRadioButton::indicator:unchecked{
+background:white;
+border: 1px solid;
+border-color: white;
+width: 33px;
+height: 33px;
+border-radius: 17px;
+}
+QRadioButton::indicator:checked{
+background:black;
+border: 7px solid;
+border-color: white;
+width: 21px;
+height: 21px;
+border-radius: 17px;
+}
+QRadioButton{
+color:white;
+}</string>
+    </property>
+    <property name="text">
+     <string>35</string>
+    </property>
+    <property name="checked">
+     <bool>true</bool>
+    </property>
+   </widget>
+   <widget class="QLabel" name="lblChooseZone">
+    <property name="geometry">
+     <rect>
+      <x>5</x>
+      <y>10</y>
+      <width>421</width>
+      <height>91</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <family>Ubuntu</family>
+      <pointsize>55</pointsize>
+      <weight>50</weight>
+      <bold>false</bold>
+     </font>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">color: white;</string>
+    </property>
+    <property name="text">
+     <string>Choose zone</string>
+    </property>
+   </widget>
+   <widget class="QRadioButton" name="zone_34">
+    <property name="geometry">
+     <rect>
+      <x>660</x>
+      <y>110</y>
+      <width>131</width>
+      <height>81</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <family>Ubuntu</family>
+      <pointsize>44</pointsize>
+     </font>
+    </property>
+    <property name="focusPolicy">
+     <enum>Qt::ClickFocus</enum>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">QRadioButton::indicator:unchecked{
+background:white;
+border: 1px solid;
+border-color: white;
+width: 33px;
+height: 33px;
+border-radius: 17px;
+}
+QRadioButton::indicator:checked{
+background:black;
+border: 7px solid;
+border-color: white;
+width: 21px;
+height: 21px;
+border-radius: 17px;
+}
+QRadioButton{
+color:white;
+}</string>
+    </property>
+    <property name="text">
+     <string>34</string>
+    </property>
+   </widget>
+   <zorder>zone_35</zorder>
+   <zorder>zone_34</zorder>
+   <zorder>lblChooseZone</zorder>
+  </widget>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>
